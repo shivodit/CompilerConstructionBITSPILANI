@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+ 
+
 void removeComments(char *testcaseFile, char *cleanFile){
     FILE* TEST = fopen(testcaseFile, "r");
     FILE* CLEAN = fopen(cleanFile, "w");
@@ -18,6 +20,8 @@ void removeComments(char *testcaseFile, char *cleanFile){
     fclose(CLEAN);
 }
 
+
+// temporary
 int main(){
     char* g = "testfile.txt";
     char* p = "cleanfile.txt";
