@@ -1,0 +1,9 @@
+#include <stdio.h>
+#include "lexerDef.h"
+
+#include <stdbool.h>
+
+void printTokenInfo(tokenInfo tk);
+
+bool isEqual(char c1, char c2);
+bool isInRange(char c, char start, char end);
