@@ -1,6 +1,12 @@
 #ifndef LEXER_DATA_DEF
 #define LEXER_DATA_DEF
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define BUFFER_SIZE 4096 // buffer size of a single buffer
+
 typedef enum {
     TK_ASSIGNOP, TK_COMMENT, TK_FIELDID, TK_ID, TK_NUM, TK_RNUM, TK_FUNID, TK_RUID, TK_WITH,
     TK_PARAMETERS, TK_END, TK_WHILE, TK_UNION, TK_ENDUNION, TK_DEFINETYPE, TK_AS, TK_TYPE, TK_MAIN, 

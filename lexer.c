@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-#define BUFFER_SIZE 4096 // buffer size of a single buffer
+#include "lexer.h"
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 char* twinBuffer[2]; // twin buffer
@@ -38,8 +34,6 @@ FILE *getStream(FILE *fp){
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
-
- 
 
 void removeComments(char *testcaseFile, char *cleanFile){
     FILE* TEST = fopen(testcaseFile, "r");
