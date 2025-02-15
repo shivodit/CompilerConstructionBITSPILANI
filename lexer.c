@@ -22,13 +22,23 @@ tokenInfo* newTokenInfo(TOKEN tk, char* lx, int line_no, TAGGED_VALUE value){
 twinBuffer* tb; // global twinBuffer struct 
 
 void initializeTwinBuffer(){
-    twinBuffer* tb = (twinBuffer*)malloc(sizeof(twinBuffer));
+    tb = (twinBuffer*)malloc(sizeof(twinBuffer));
+    if (!tb) {
+        printf("Failed to allocate twinBuffer\n");
+        exit(EXIT_FAILURE); // Exit if allocation fails
+    }
+
     tb->B[0] = (char*)malloc(BUFFER_SIZE*sizeof(char));
     tb->B[1] = (char*)malloc(BUFFER_SIZE*sizeof(char));
+    if (!tb->B[0] || !tb->B[1]) {
+        printf("Failed to allocate buffers");
+        exit(EXIT_FAILURE); // Exit if allocation fails
+    }
     tb->bufferToBeLoaded = 0; 
     tb->arePointersInDifferentBuffers = false;
     tb->ip = 0; 
     tb->fp = 0;
+    tb->fp_line_no = 1;
 }
 
 FILE *getStream(FILE *fp){
@@ -53,24 +63,35 @@ FILE *getStream(FILE *fp){
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
-// TODO`
+// TODO
 char nextc(){
+    char c;
     if(tb->fp < BUFFER_SIZE-1){
         tb->fp++;
-        return tb->B
+        c = tb->B[!tb->bufferToBeLoaded][tb->fp]; // since fp is always present in B[!bufferToBeLoaded]
     }
-    else{
+    else if(tb->fp == BUFFER_SIZE-1){
         // load the next buffer
-        if(getStream(tb->fp) == NULL){
+        if(getStream(curr_file) == NULL){
             return EOF;
         }
-        return tb->B[tb->bufferToBeLoaded][tb->fp++];
+        tb->fp = 0;
+        c = tb->B[!tb->bufferToBeLoaded][tb->fp];
     }
-    return " ";
+    else{
+        printf("Unexpected error (forward pointer goes out of bound)\n");
+        exit(EXIT_FAILURE); // ?
+    }
+    if(c == '\n') tb->fp_line_no++;
+    return c;
+}
+
+char* getLexeme(){ // using global twinBuffer struct
+    
 }
 
 void retract(){
-    
+
 }
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 
