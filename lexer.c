@@ -8,7 +8,7 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
-char* twinBuffer[2]; // twin buffer
+twinBuffer* tb; // global twinBuffer struct 
 bool bufferToBeLoaded = false; // represents the buffer to be loaded next
 
 // STATE VARIABLES 
@@ -28,9 +28,6 @@ tokenInfo* newTokenInfo(TOKEN tk, char* lx, int line_no, TAGGED_VALUE value){
     tk_info->value = value;
     return tk_info;
 }
-
-
-twinBuffer* tb; // global twinBuffer struct 
 
 tokenInfo* copyTokenInfo(tokenInfo* tk){
     tokenInfo* tk_info = (tokenInfo*)malloc(sizeof(tokenInfo));
