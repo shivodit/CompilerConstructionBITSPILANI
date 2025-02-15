@@ -86,6 +86,10 @@ char nextc(){
     return c;
 }
 
+int getLineNo(){
+    return tb->fp_line_no;
+}
+
 char* getLexeme(){ // using global twinBuffer struct
     
 }
