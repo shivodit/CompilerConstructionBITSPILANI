@@ -5,8 +5,8 @@
 #include <stdio.h>
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
-char* twinBuffer[2]; // twin buffer
-bool bufferToBeLoaded = false; // represents the buffer to be loaded next
+
+// bool bufferToBeLoaded = false; // represents the buffer to be loaded next
 // bool completeFileRead = false; // stores whether the input file has been completely read
 
 // create new token 
@@ -19,11 +19,16 @@ tokenInfo* newTokenInfo(TOKEN tk, char* lx, int line_no, TAGGED_VALUE value){
     return tk_info;
 }
 
+twinBuffer* tb; // global twinBuffer struct 
+
 void initializeTwinBuffer(){
-    twinBuffer[0] = (char*)malloc(BUFFER_SIZE*sizeof(char));
-    twinBuffer[1] = (char*)malloc(BUFFER_SIZE*sizeof(char));
-    
-    bufferToBeLoaded = 0;
+    twinBuffer* tb = (twinBuffer*)malloc(sizeof(twinBuffer));
+    tb->B[0] = (char*)malloc(BUFFER_SIZE*sizeof(char));
+    tb->B[1] = (char*)malloc(BUFFER_SIZE*sizeof(char));
+    tb->bufferToBeLoaded = 0; 
+    tb->arePointersInDifferentBuffers = false;
+    tb->ip = 0; 
+    tb->fp = 0;
 }
 
 FILE *getStream(FILE *fp){
@@ -31,10 +36,10 @@ FILE *getStream(FILE *fp){
         return NULL; // or return fp ?
     }
 
-    memset(twinBuffer[bufferToBeLoaded], EOF, BUFFER_SIZE); 
+    memset(tb->B[tb->bufferToBeLoaded], EOF, BUFFER_SIZE); 
     // initializing the buffer with EOF so that if the reamining data in file is lesser than BUFFER_SIZE, the remaining part of the buffer is filled with EOFs
 
-    int charactersRead = read(fp, twinBuffer[bufferToBeLoaded], BUFFER_SIZE);
+    int charactersRead = read(fp, tb->B[tb->bufferToBeLoaded], BUFFER_SIZE);
     if(charactersRead == 0 || charactersRead < BUFFER_SIZE){
         // completeFileRead = true;
         return NULL; // or return fp ?
@@ -43,16 +48,30 @@ FILE *getStream(FILE *fp){
         printf("Error loading buffer\n");
     }
 
-    bufferToBeLoaded = !bufferToBeLoaded;
+    tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
     return fp;
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 // TODO`
 char nextc(){
+    if(tb->fp < BUFFER_SIZE-1){
+        tb->fp++;
+        return tb->B
+    }
+    else{
+        // load the next buffer
+        if(getStream(tb->fp) == NULL){
+            return EOF;
+        }
+        return tb->B[tb->bufferToBeLoaded][tb->fp++];
+    }
     return " ";
 }
 
+void retract(){
+    
+}
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 
 void removeComments(char *testcaseFile, char *cleanFile){
