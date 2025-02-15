@@ -54,7 +54,7 @@ unsigned int hashFunction(const char *lexeme) {
     return hash % SYMBOL_TABLE_SIZE;
 }
 
-// Create and initialize a new symbol table.
+
 SymbolTable* createSymbolTable() {
     SymbolTable *st = (SymbolTable*)malloc(sizeof(SymbolTable));
     if (!st) {
@@ -138,14 +138,13 @@ void freeSymbolTable(SymbolTable *st) {
 void initializeKeywords(SymbolTable *st) {
     for (int i = 0; i < NUM_KEYWORDS; i++) {
         tokenInfo token;
-        // Duplicate the lexeme string to allocate memory.
         token.lexeme = strdup(keywordList[i].lexeme);
         if (!token.lexeme) {
             printf("Memory allocation error\n");
             exit(EXIT_FAILURE);
         }
         token.token = keywordList[i].token;
-        token.line_no = -1;    // Reserved keywords do not need a line number.
+        token.line_no = 1;    // Reserved keywords do not need a line number.
         token.value.type = NA; // Not applicable for keywords.
         insertToken(st, token);
     }
