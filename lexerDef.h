@@ -44,6 +44,7 @@ typedef struct{
     bool arePointersInDifferentBuffers; // true if ip and fp are in different buffers
     int ip; // pointer to the first char in lexeme
     int fp; // pointer to the current char in lexeme
+    int fp_line_no; // line number of the char at fp (basically, line no. of lexeme)
 } twinBuffer;
 
 #endif

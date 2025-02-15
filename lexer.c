@@ -55,18 +55,25 @@ FILE *getStream(FILE *fp){
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 // TODO`
 char nextc(){
+    char c;
     if(tb->fp < BUFFER_SIZE-1){
         tb->fp++;
-        return tb->B;
+        c = tb->B[!tb->bufferToBeLoaded][tb->fp]; // since fp is always present in B[!bufferToBeLoaded]
     }
-    else{
+    else if(tb->fp == BUFFER_SIZE-1){
         // load the next buffer
-        if(getStream(tb->fp) == NULL){
+        if(getStream(curr_file) == NULL){
             return EOF;
         }
-        return tb->B[tb->bufferToBeLoaded][tb->fp++];
+        tb->fp = 0;
+        c = tb->B[!tb->bufferToBeLoaded][tb->fp];
     }
-    return " ";
+    else{
+        printf("Unexpected error (forward pointer goes out of bound)\n");
+        exit(EXIT_FAILURE); // ?
+    }
+    if(c == '\n') tb->fp_line_no++;
+    return c;
 }
 
 void retract(){
