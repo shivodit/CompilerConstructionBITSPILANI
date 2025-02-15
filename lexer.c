@@ -8,6 +8,7 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
+twinBuffer* tb; // global twinBuffer struct 
 
 // STATE VARIABLES 
 bool is_eof_file = false;
@@ -43,8 +44,6 @@ void initializelexer(FILE* fp){
     symbol_table = createSymbolTable();
     DFA_STATE = 0;
 }
-
-twinBuffer* tb;
 
 void initializeTwinBuffer(){
     tb = (twinBuffer*)malloc(sizeof(twinBuffer));
@@ -112,25 +111,52 @@ char nextc(){
     return c;
 }
 
-int getLineNo(){
-    return tb->fp_line_no;
-}
-
-char* getlexeme(){
-    return NULL;
-}
-
-int getLineNumber(){
-    return -1;
-}
-
-// TODO
 void retract(){
-    return ;
+    if (tb->fp == 0) { 
+        // If fp is at the start of a buffer, move to the previous buffer
+        tb->arePointersInDifferentBuffers = !tb->arePointersInDifferentBuffers;
+        tb->fp = sizeof(tb->B[0]) - 1;  // Assuming fixed buffer size, adjust as needed
+        //Move the file pointer back, otherwise the upcoming data will be loaded twice
+        fseek(curr_file, sizeof(tb->B[0]), SEEK_CUR);
+        // Mark the buffer as the another buffer needs to be reloaded if we are moving to the previous buffer
+        tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
+    } else {
+        tb->fp--;  // Move back within t=e same buffer
+    }
+}
+
+char* getLexeme(){
+    int length;
+    if(tb->arePointersInDifferentBuffers){
+        length = (BUFFER_SIZE - tb->ip + tb->fp + 1 )+ 1; //The exttra +1 is for '/0'
+    }
+    else{
+        length= (tb->fp - tb->ip + 1 )+ 1; //The exttra +1 is for '/0'
+    }
+    char* lex = (char*)malloc(length*sizeof(char));
+    if(tb->arePointersInDifferentBuffers){
+        int x = sizeof(tb->B[0]) - tb->ip;
+        for(int i=0;i<x+1;i++){
+            *(lex+i)=tb->B[tb->bufferToBeLoaded][tb->ip+i];
+        }
+        for(int i=0;i<length-x-1;i++){
+            *(lex+i+x+1)=tb->B[!tb->bufferToBeLoaded][i];
+        }
+    }else{
+        for(int i=tb->ip;i<length;i++){
+            *(lex+i)=tb->B[tb->bufferToBeLoaded][i];
+        }
+    }
+    return lex;
 }
 
 void accept(){
-    return ;
+    tb->ip=tb->fp;
+    return;
+}
+
+int getLineNumber(){
+    return tb->fp_line_no;
 }
 
 tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
