@@ -144,7 +144,7 @@ void initializeKeywords(SymbolTable *st) {
             exit(EXIT_FAILURE);
         }
         token.token = keywordList[i].token;
-        token.line_no = -1;    // Reserved keywords do not need a line number.
+        token.line_no = 1;    // Reserved keywords do not need a line number.
         token.value.type = NA; // Not applicable for keywords.
         insertToken(st, token);
     }
