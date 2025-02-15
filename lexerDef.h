@@ -5,6 +5,7 @@
 #define xstr(x) str(x)
 
 #define BUFFER_SIZE 4096 // buffer size of a single buffer
+#define TOKEN_LIST_SIZE 4096
 
 typedef enum {
     TK_ASSIGNOP, TK_COMMENT, TK_FIELDID, TK_ID, TK_NUM, TK_RNUM, TK_FUNID, TK_RUID, TK_WITH,

@@ -7,6 +7,12 @@
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 char* twinBuffer[2]; // twin buffer
 bool bufferToBeLoaded = false; // represents the buffer to be loaded next
+
+
+// STATE VARIABLES 
+bool is_eof_file = false;
+
+
 // bool completeFileRead = false; // stores whether the input file has been completely read
 
 // create new token 
@@ -53,6 +59,15 @@ char nextc(){
     return " ";
 }
 
+char* getlexeme(){
+    return NULL;
+}
+
+int getLineNumber(){
+    return -1;
+}
+
+// TODO
 void retract(){
     return ;
 }
@@ -79,14 +94,22 @@ void removeComments(char *testcaseFile, char *cleanFile){
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 
-tokenInfo getNextToken(){
+tokenInfo* getNextToken(){
 
 }
 
 /*----------------------------------------------------------------------------------------------------------------------------------------*/
 tokenInfo** getAllTokens(char* testcasefile, bool verbose){
+    // open file and initializeTwinBuffer
     FILE* fp = fopen(testcasefile, "r");
     initializeTwinBuffer();
+
+    tokenInfo** tokenlist = (tokenInfo**)calloc(TOKEN_LIST_SIZE,sizeof(tokenInfo*));
+    int token_count = 0;
+
+    while (!is_eof_file){
+        tokenInfo* curr_token = getNextToken();
+    }
 
 }
 
