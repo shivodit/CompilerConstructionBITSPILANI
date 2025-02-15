@@ -1,9 +1,23 @@
-#include "lexer.h"
+#include "lexerDef.h"
+
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 char* twinBuffer[2]; // twin buffer
 bool bufferToBeLoaded = false; // represents the buffer to be loaded next
 // bool completeFileRead = false; // stores whether the input file has been completely read
+
+// create new token 
+tokenInfo* newTokenInfo(TOKEN tk, char* lx, int line_no, TAGGED_VALUE value){
+    tokenInfo* tk_info = (tokenInfo*)malloc(sizeof(tokenInfo));
+    tk_info->token = tk;
+    tk_info->lexeme = lx;
+    tk_info->line_no = line_no;
+    tk_info->value = value;
+    return tk_info;
+}
 
 void initializeTwinBuffer(){
     twinBuffer[0] = (char*)malloc(BUFFER_SIZE*sizeof(char));
@@ -34,6 +48,12 @@ FILE *getStream(FILE *fp){
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
+// TODO`
+char nextc(){
+    return " ";
+}
+
+/*---------------------------------------------------------------------------------------------------------------------------------------*/
 
 void removeComments(char *testcaseFile, char *cleanFile){
     FILE* TEST = fopen(testcaseFile, "r");
@@ -53,6 +73,18 @@ void removeComments(char *testcaseFile, char *cleanFile){
     fclose(CLEAN);
 }
 
+/*---------------------------------------------------------------------------------------------------------------------------------------*/
+
+tokenInfo getNextToken(){
+
+}
+
+/*-------------------g--------------------------------------------------------------------------------------------------------------------*/
+tokenInfo** getAllTokens(char* testcasefile, bool verbose){
+    FILE* fp = fopen(testcasefile, "r");
+    initializeTwinBuffer();
+
+}
 
 // temporary
 int main(){
