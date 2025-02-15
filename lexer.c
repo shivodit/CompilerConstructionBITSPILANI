@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
+
 char* twinBuffer[2]; // twin buffer
 bool bufferToBeLoaded = false; // represents the buffer to be loaded next
 
@@ -28,6 +29,9 @@ tokenInfo* newTokenInfo(TOKEN tk, char* lx, int line_no, TAGGED_VALUE value){
     return tk_info;
 }
 
+
+twinBuffer* tb; // global twinBuffer struct 
+
 tokenInfo* copyTokenInfo(tokenInfo* tk){
     tokenInfo* tk_info = (tokenInfo*)malloc(sizeof(tokenInfo));
     tk_info->token = tk->token;
@@ -46,10 +50,13 @@ void initializelexer(FILE* fp){
 }
 
 void initializeTwinBuffer(){
-    twinBuffer[0] = (char*)malloc(BUFFER_SIZE*sizeof(char));
-    twinBuffer[1] = (char*)malloc(BUFFER_SIZE*sizeof(char));
-    
-    bufferToBeLoaded = 0;
+    twinBuffer* tb = (twinBuffer*)malloc(sizeof(twinBuffer));
+    tb->B[0] = (char*)malloc(BUFFER_SIZE*sizeof(char));
+    tb->B[1] = (char*)malloc(BUFFER_SIZE*sizeof(char));
+    tb->bufferToBeLoaded = 0; 
+    tb->arePointersInDifferentBuffers = false;
+    tb->ip = 0; 
+    tb->fp = 0;
 }
 
 FILE *getStream(FILE *fp){
@@ -57,10 +64,10 @@ FILE *getStream(FILE *fp){
         return NULL; // or return fp ?
     }
 
-    memset(twinBuffer[bufferToBeLoaded], EOF, BUFFER_SIZE); 
+    memset(tb->B[tb->bufferToBeLoaded], EOF, BUFFER_SIZE); 
     // initializing the buffer with EOF so that if the reamining data in file is lesser than BUFFER_SIZE, the remaining part of the buffer is filled with EOFs
 
-    int charactersRead = read(fp, twinBuffer[bufferToBeLoaded], BUFFER_SIZE);
+    int charactersRead = read(fp, tb->B[tb->bufferToBeLoaded], BUFFER_SIZE);
     if(charactersRead == 0 || charactersRead < BUFFER_SIZE){
         // completeFileRead = true;
         return NULL; // or return fp ?
@@ -69,31 +76,80 @@ FILE *getStream(FILE *fp){
         printf("Error loading buffer\n");
     }
 
-    bufferToBeLoaded = !bufferToBeLoaded;
+    tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
     return fp;
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 // TODO: file interface functions
 char nextc(){
-    return " ";
+    char c;
+    if(tb->fp < BUFFER_SIZE-1){
+        tb->fp++;
+        c = tb->B[!tb->bufferToBeLoaded][tb->fp]; // since fp is always present in B[!bufferToBeLoaded]
+    }
+    else if(tb->fp == BUFFER_SIZE-1){
+        // load the next buffer
+        if(getStream(curr_file) == NULL){
+            return EOF;
+        }
+        tb->fp = 0;
+        c = tb->B[!tb->bufferToBeLoaded][tb->fp];
+    }
+    else{
+        printf("Unexpected error (forward pointer goes out of bound)\n");
+        exit(EXIT_FAILURE); // ?
+    }
+    if(c == '\n') tb->fp_line_no++;
+    return c;
 }
 
-char* getlexeme(){
-    return NULL;
+void retract(){
+    if (tb->fp == 0) { 
+        // If fp is at the start of a buffer, move to the previous buffer
+        tb->arePointersInDifferentBuffers = !tb->arePointersInDifferentBuffers;
+        tb->fp = sizeof(tb->B[0]) - 1;  // Assuming fixed buffer size, adjust as needed
+        //Move the file pointer back, otherwise the upcoming data will be loaded twice
+        fseek(curr_file, sizeof(tb->B[0]), SEEK_CUR);
+        // Mark the buffer as the another buffer needs to be reloaded if we are moving to the previous buffer
+        tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
+    } else {
+        tb->fp--;  // Move back within t=e same buffer
+    }
+}
+
+char* getLexeme(){
+    int length;
+    if(tb->arePointersInDifferentBuffers){
+        length = (BUFFER_SIZE - tb->ip + tb->fp + 1 )+ 1; //The exttra +1 is for '/0'
+    }
+    else{
+        length= (tb->fp - tb->ip + 1 )+ 1; //The exttra +1 is for '/0'
+    }
+    char* lex = (char*)malloc(length*sizeof(char));
+    if(tb->arePointersInDifferentBuffers){
+        int x = sizeof(tb->B[0]) - tb->ip;
+        for(int i=0;i<x+1;i++){
+            *(lex+i)=tb->B[tb->bufferToBeLoaded][tb->ip+i];
+        }
+        for(int i=0;i<length-x-1;i++){
+            *(lex+i+x+1)=tb->B[!tb->bufferToBeLoaded][i];
+        }
+    }else{
+        for(int i=tb->ip;i<length;i++){
+            *(lex+i)=tb->B[tb->bufferToBeLoaded][i];
+        }
+    }
+    return lex;
+}
+
+void accept(){
+    tb->ip=tb->fp;
+    return;
 }
 
 int getLineNumber(){
     return -1;
-}
-
-// TODO
-void retract(){
-    return ;
-}
-
-void accept(){
-    return ;
 }
 
 tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
@@ -198,7 +254,6 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
     }
     return tokenlist;
 }
-
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 
