@@ -1,9 +1,8 @@
 #ifndef LEXER_DATA_DEF
 #define LEXER_DATA_DEF
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#define str(x) #x
+#define xstr(x) str(x)
 
 #define BUFFER_SIZE 4096 // buffer size of a single buffer
 
