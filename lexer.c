@@ -57,7 +57,7 @@ FILE *getStream(FILE *fp){
 char nextc(){
     if(tb->fp < BUFFER_SIZE-1){
         tb->fp++;
-        return tb->B
+        return tb->B;
     }
     else{
         // load the next buffer
@@ -70,7 +70,17 @@ char nextc(){
 }
 
 void retract(){
-    
+    if (tb->fp == 0) { 
+        // If fp is at the start of a buffer, move to the previous buffer
+        tb->arePointersInDifferentBuffers = !tb->arePointersInDifferentBuffers;
+        tb->fp = sizeof(tb->B[0]) - 1;  // Assuming fixed buffer size, adjust as needed
+        //Move the file pointer back, otherwise the upcoming data will be loaded twice
+        fseek(curr_file, sizeof(tb->B[0]), SEEK_CUR);
+        // Mark the buffer as the another buffer needs to be reloaded if we are moving to the previous buffer
+        tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
+    } else {
+        tb->fp--;  // Move back within t=e same buffer
+    }
 }
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 
