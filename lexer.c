@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-#define BUFFER_SIZE 4096 // buffer size of a single buffer
+#include "lexer.h"
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 char* twinBuffer[2]; // twin buffer
@@ -57,6 +53,8 @@ void removeComments(char *testcaseFile, char *cleanFile){
     fclose(CLEAN);
 }
 
+
+// temporary
 int main(){
     char* g = "testfile.txt";
     char* p = "cleanfile.txt";
