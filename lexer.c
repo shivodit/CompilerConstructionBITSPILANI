@@ -2,6 +2,8 @@
 #include "helper_function.h"
 #include "symbol_table.h"
 
+#include <math.h>
+// use -lm flag while compiling
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,14 +39,6 @@ tokenInfo* copyTokenInfo(tokenInfo* tk){
     return tk_info;
 }
 
-void initializelexer(FILE* fp){
-    curr_file = fp;
-    is_eof_file = false;
-    initializeTwinBuffer();
-    symbol_table = createSymbolTable();
-    DFA_STATE = 0;
-}
-
 void initializeTwinBuffer(){
     tb = (twinBuffer*)malloc(sizeof(twinBuffer));
     if (!tb) {
@@ -63,6 +57,16 @@ void initializeTwinBuffer(){
     tb->ip = 0; 
     tb->fp = 0;
     tb->fp_line_no = 1;
+}
+
+// initialize the lexer with the file pointer
+// ALWAYS CALL BEFORE LEXICAL ANALYSIS
+void initializelexer(FILE* fp){
+    curr_file = fp;
+    is_eof_file = false;
+    initializeTwinBuffer();
+    symbol_table = createSymbolTable();
+    DFA_STATE = 0;
 }
 
 FILE *getStream(FILE *fp){
@@ -87,8 +91,7 @@ FILE *getStream(FILE *fp){
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
-// TODO: file interface functions
-// TODO
+// TODO : Verify locally
 char nextc(){
     char c;
     if(tb->fp < BUFFER_SIZE-1){
@@ -159,6 +162,13 @@ int getLineNumber(){
     return tb->fp_line_no;
 }
 
+// TODO: Implement state wise error handling
+void handleError(int current_state, char c){
+    int line_no = getLineNumber();
+    printf("Error at line %d: Invalid character %c in state %d\n", line_no, c, current_state);
+    return;
+}
+
 tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
     while (retract_num--){
         retract();
@@ -186,6 +196,7 @@ tokenInfo* getNextToken(){
     // initialize dfa to start state
     DFA_STATE = 0;
     float n = 0;
+    int s = 1;
     while (true){
         char c = nextc();
         
@@ -229,14 +240,226 @@ tokenInfo* getNextToken(){
                     DFA_STATE = 50;
                 }
                 else{
-                    printf("Invalid character %c\n", c);
-                    // TO IMPLEMENT: error handling
+                    // symbol not recognized
+                    handleError(DFA_STATE, c);
                     return NULL;
                 }
-    
                 break;
             }
-            
+            case 1:
+                if (isInRange(c,'a','z')) DFA_STATE = 2;
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 2:
+                if (isInRange(c,'a','z')) DFA_STATE = 2;
+                // check validity of other transition
+                else{
+                    return action(TK_RUID,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 4:
+                if (isInRange(c,'a','z')||isInRange(c,'A','Z')) DFA_STATE = 5;
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 5:
+                if (isInRange(c,'a','z')||isInRange(c,'A','Z')) DFA_STATE = 5;
+                else if (isInRange(c,'0','9')) DFA_STATE = 7;
+                else{
+                    return action(TK_FUNID,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 7:
+                if (isInRange(c,'0','9')) DFA_STATE = 7;
+                else{
+                    return action(TK_FUNID,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 50:
+                if (isInRange(c,'0','9')){
+                    n = n*10 + (c - '0');
+                    DFA_STATE = 50;
+                }
+                else if (isEqual(c,'.')){
+                    DFA_STATE = 52;
+                }
+                else{
+                    return action(TK_NUM,(TAGGED_VALUE){.type = INT_VAL, .val.i = (int)n}, 1);
+                }
+                break;
+        
+            case 52:    
+                if (isInRange(c,'0','9')){
+                    n = n + (c - '0')*0.1;
+                    DFA_STATE = 53;
+                }
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 53:
+                if (isInRange(c,'0','9')){
+                    n = n + (c - '0')*0.01;
+                    DFA_STATE = 54;
+                }
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 54:
+                if (isEqual(c,'E')) DFA_STATE = 55;
+                else{
+                    return action(TK_RNUM,(TAGGED_VALUE){.type = FLOAT_VAL, .val.f = n}, 1);
+                }
+                break;
+            case 55:
+                if (isEqual(c,'+') || isEqual(c,'-')){
+                    DFA_STATE = 56;
+                    s = (c == '+') ? 1 : -1;
+                }
+                else if(isInRange(c,'0','9')){
+                    n = n*pow(10,(c-'0')*10);
+                    DFA_STATE = 57;
+                }
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+            case 56:
+                if (isInRange(c,'0','9')){
+                    n = n*pow(10,s*(c-'0')*10);
+                    DFA_STATE = 57;
+                }
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 57:
+                if (isInRange(c,'0','9')){
+                    n = n*pow(10,s*(c-'0'));
+                    DFA_STATE = 58;
+                }
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 58:
+                return action(TK_RNUM,(TAGGED_VALUE){.type = FLOAT_VAL, .val.f = n}, 1);
+                break;
+            case 8:
+                if(isInRange(c,'2','7')) DFA_STATE = 9;
+                else{
+                    return action(TK_FIELDID,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 9:
+                if(isInRange(c,'2','7')) DFA_STATE = 10;
+                else if(isInRange(c,'b','d')) DFA_STATE = 9;
+                else{
+                    return action(TK_ID,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 10:
+                if(isInRange(c,'2','7')) DFA_STATE = 10;
+                else{
+                    return action(TK_ID,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 12:
+                if(isInRange(c,'a','z')) DFA_STATE = 12;
+                else{
+                    return action(TK_FIELDID,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 14:
+                if (isEqual(c,'\n')){
+                    return action(TK_COMMENT,(TAGGED_VALUE){.type = NA}, 0);
+                }
+                else{
+                    DFA_STATE = 14;
+                }
+                break;
+            case 16:
+                if (isEqual(c,'=')) return action(TK_LE,(TAGGED_VALUE){.type = NA}, 0);
+                else if(isEqual(c, '-')) DFA_STATE = 18;
+                else{
+                    return action(TK_LT,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 18:
+                if (isEqual(c,'-')) DFA_STATE = 19;
+                else {
+                    return action(TK_LT,(TAGGED_VALUE){.type = NA}, 2);
+                }
+                break;
+            case 19:
+                if (isEqual(c,'-')) return action(TK_ASSIGNOP,(TAGGED_VALUE){.type = NA}, 0);
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 24:
+                if (isEqual(c,'=')) return action(TK_EQ,(TAGGED_VALUE){.type = NA}, 0);
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 26:
+                if (isEqual(c,'=')) return action(TK_GE,(TAGGED_VALUE){.type = NA}, 0);
+                else{
+                    return action(TK_GT,(TAGGED_VALUE){.type = NA}, 1);
+                }
+                break;
+            case 29:
+                if (isEqual(c,'=')) return action(TK_NE,(TAGGED_VALUE){.type = NA}, 0);
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 35:
+                if (isEqual(c,'@')) DFA_STATE = 36;
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 36:
+                if (isEqual(c,'@')) return action(TK_OR,(TAGGED_VALUE){.type = NA}, 0);
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 38:
+                if (isEqual(c,'&')) DFA_STATE = 39;
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            case 39:
+                if (isEqual(c,'&')) return action(TK_AND,(TAGGED_VALUE){.type = NA}, 0);
+                else{
+                    handleError(DFA_STATE, c);
+                    return NULL;
+                }
+                break;
+            default:
+                handleError(DFA_STATE, c);
+                return NULL;
+                break;
         }
     }
 }
@@ -250,6 +473,7 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
 
     tokenInfo** tokenlist = (tokenInfo**)calloc(TOKEN_LIST_SIZE,sizeof(tokenInfo*));
     int token_count = 0;
+    int cap = TOKEN_LIST_SIZE;
 
     while (!is_eof_file){
         tokenInfo* curr_token = getNextToken();
@@ -257,6 +481,10 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
 
         if (verbose) {
             printTokenInfo(*curr_token);
+        }
+        if (token_count == cap){
+            cap *= 2;
+            tokenlist = (tokenInfo**)realloc(tokenlist, cap*sizeof(tokenInfo*));
         }
     }
     return tokenlist;
