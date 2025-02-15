@@ -9,7 +9,6 @@
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
 twinBuffer* tb; // global twinBuffer struct 
-bool bufferToBeLoaded = false; // represents the buffer to be loaded next
 
 // STATE VARIABLES 
 bool is_eof_file = false;
@@ -47,13 +46,23 @@ void initializelexer(FILE* fp){
 }
 
 void initializeTwinBuffer(){
-    twinBuffer* tb = (twinBuffer*)malloc(sizeof(twinBuffer));
+    tb = (twinBuffer*)malloc(sizeof(twinBuffer));
+    if (!tb) {
+        printf("Failed to allocate twinBuffer\n");
+        exit(EXIT_FAILURE); // Exit if allocation fails
+    }
+
     tb->B[0] = (char*)malloc(BUFFER_SIZE*sizeof(char));
     tb->B[1] = (char*)malloc(BUFFER_SIZE*sizeof(char));
+    if (!tb->B[0] || !tb->B[1]) {
+        printf("Failed to allocate buffers");
+        exit(EXIT_FAILURE); // Exit if allocation fails
+    }
     tb->bufferToBeLoaded = 0; 
     tb->arePointersInDifferentBuffers = false;
     tb->ip = 0; 
     tb->fp = 0;
+    tb->fp_line_no = 1;
 }
 
 FILE *getStream(FILE *fp){
@@ -79,6 +88,7 @@ FILE *getStream(FILE *fp){
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 // TODO: file interface functions
+// TODO
 char nextc(){
     char c;
     if(tb->fp < BUFFER_SIZE-1){
@@ -146,7 +156,7 @@ void accept(){
 }
 
 int getLineNumber(){
-    return -1;
+    return tb->fp_line_no;
 }
 
 tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
@@ -251,6 +261,7 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
     }
     return tokenlist;
 }
+
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 
