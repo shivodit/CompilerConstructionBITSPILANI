@@ -102,6 +102,36 @@ void removeComments(char *testcaseFile, char *cleanFile){
     fclose(CLEAN);
 }
 
+char* getLexeme(){
+    int length;
+    if(tb->arePointersInDifferentBuffers){
+        length = (BUFFER_SIZE - tb->ip + tb->fp + 1 )+ 1; //The exttra +1 is for '/0'
+    }
+    else{
+        length= (tb->fp - tb->ip + 1 )+ 1; //The exttra +1 is for '/0'
+    }
+    char* lex = (char*)malloc(length*sizeof(char));
+    if(tb->arePointersInDifferentBuffers){
+        int x = sizeof(tb->B[0]) - tb->ip;
+        for(int i=0;i<x+1;i++){
+            *(lex+i)=tb->B[tb->bufferToBeLoaded][tb->ip+i];
+        }
+        for(int i=0;i<length-x-1;i++){
+            *(lex+i+x+1)=tb->B[!tb->bufferToBeLoaded][i];
+        }
+    }else{
+        for(int i=tb->ip;i<length;i++){
+            *(lex+i)=tb->B[tb->bufferToBeLoaded][i];
+        }
+    }
+    return lex;
+}
+
+void accept(){
+    tb->ip=tb->fp;
+    return;
+}
+
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 
 tokenInfo getNextToken(){
