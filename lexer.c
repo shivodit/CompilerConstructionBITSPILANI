@@ -42,8 +42,10 @@ tokenInfo* copyTokenInfo(tokenInfo* tk){
 }
 
 void freeTokenInfo(tokenInfo* tk){
-    free(tk->lexeme);
+    // FIX
+    // free(tk->lexeme);
     free(tk);
+    
 }
 
 void initializeTwinBuffer(){
@@ -145,6 +147,7 @@ void retract(){
     } else {
         tb->fp--;  // Move back within t=e same buffer
     }
+    if (tb->B[!tb->bufferToBeLoaded][tb->fp] == '\n') tb->fp_line_no--;
 }
 
 char* getLexeme(){
@@ -515,7 +518,6 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
             tokenlist = (tokenInfo**)realloc(tokenlist, cap*sizeof(tokenInfo*));
         }
     }
-
     // free the memory allocated for twinBuffer
     free(tb->B[0]);
     free(tb->B[1]);
