@@ -6,6 +6,7 @@
 // use -lm flag while compiling
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -37,6 +38,11 @@ tokenInfo* copyTokenInfo(tokenInfo* tk){
     tk_info->line_no = tk->line_no;
     tk_info->value = tk->value;
     return tk_info;
+}
+
+void freeTokenInfo(tokenInfo* tk){
+    free(tk->lexeme);
+    free(tk);
 }
 
 void initializeTwinBuffer(){
@@ -76,8 +82,8 @@ FILE *getStream(FILE *fp){
 
     memset(tb->B[tb->bufferToBeLoaded], EOF, BUFFER_SIZE); 
     // initializing the buffer with EOF so that if the reamining data in file is lesser than BUFFER_SIZE, the remaining part of the buffer is filled with EOFs
-
-    int charactersRead = read(fp, tb->B[tb->bufferToBeLoaded], BUFFER_SIZE);
+    // TAG: FREAD MIGHT BE WRONG
+    int charactersRead = fread(tb->B[tb->bufferToBeLoaded], sizeof(char), BUFFER_SIZE, fp);
     if(charactersRead == 0 || charactersRead < BUFFER_SIZE){
         // completeFileRead = true;
         return NULL; // or return fp ?
@@ -174,7 +180,7 @@ tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
         retract();
     }
 
-    char* lx = getlexeme();
+    char* lx = getLexeme();
     tokenInfo* searched_tk = searchToken(symbol_table, lx);
     tokenInfo* tk_info = NULL;
     if (searched_tk == NULL){
@@ -199,7 +205,7 @@ tokenInfo* getNextToken(){
     int s = 1;
     while (true){
         char c = nextc();
-        
+        printf("c = %d: %c\n", c, c);
         if (c == EOF){
             is_eof_file = true;
             // end of file
@@ -332,6 +338,7 @@ tokenInfo* getNextToken(){
                     handleError(DFA_STATE, c);
                     return NULL;
                 }
+                break;
             case 56:
                 if (isInRange(c,'0','9')){
                     n = n*pow(10,s*(c-'0')*10);
@@ -487,6 +494,13 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
             tokenlist = (tokenInfo**)realloc(tokenlist, cap*sizeof(tokenInfo*));
         }
     }
+
+    // free the memory allocated for twinBuffer
+    free(tb->B[0]);
+    free(tb->B[1]);
+    free(tb);
+    freeSymbolTable(symbol_table);
+    fclose(fp);
     return tokenlist;
 }
 
@@ -514,8 +528,8 @@ void removeComments(char *testcaseFile, char *cleanFile){
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 
 // temporary
-int main(){
-    char* g = "testfile.txt";
-    char* p = "cleanfile.txt";
-    removeComments(g,p);
-}
+// int main(){
+//     char* g = "testfile.txt";
+//     char* p = "cleanfile.txt";
+//     removeComments(g,p);
+// }

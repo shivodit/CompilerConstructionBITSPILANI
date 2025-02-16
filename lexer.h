@@ -16,3 +16,4 @@ int getLineNumber();
 tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num);
 tokenInfo* getNextToken();
 tokenInfo** getAllTokens(char* testcasefile, bool verbose);
+void freeTokenInfo(tokenInfo* tk);

@@ -1,6 +1,7 @@
 #ifndef LEXER_DATA_DEF
 #define LEXER_DATA_DEF
 
+#include <stdbool.h>
 #define str(x) #x
 #define xstr(x) str(x)
 
