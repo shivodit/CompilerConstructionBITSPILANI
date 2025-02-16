@@ -2,8 +2,8 @@
 #define LEXER_DATA_DEF
 
 #include <stdbool.h>
-#define str(x) #x
-#define xstr(x) str(x)
+// #define str(x) #x
+// #define xstr(x) str(x)
 
 #define BUFFER_SIZE 4096 // buffer size of a single buffer
 #define TOKEN_LIST_SIZE 4096
@@ -46,6 +46,7 @@ typedef struct{
     int ip; // pointer to the first char in lexeme
     int fp; // pointer to the current char in lexeme
     int fp_line_no; // line number of the char at fp (basically, line no. of lexeme)
+    int ip_line_no;
 } twinBuffer;
 
 #endif
