@@ -136,7 +136,7 @@ void retract(){
         tb->arePointersInDifferentBuffers = !tb->arePointersInDifferentBuffers;
         tb->fp = sizeof(tb->B[0]) - 1;  // Assuming fixed buffer size, adjust as needed
         //Move the file pointer back, otherwise the upcoming data will be loaded twice
-        fseek(curr_file, sizeof(tb->B[0]), SEEK_CUR);
+        fseek(curr_file, -sizeof(tb->B[0]), SEEK_CUR);
         // Mark the buffer as the another buffer needs to be reloaded if we are moving to the previous buffer
         tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
     } else {
@@ -147,25 +147,29 @@ void retract(){
 char* getLexeme(){
     int length;
     if(tb->arePointersInDifferentBuffers){
-        length = (BUFFER_SIZE - tb->ip + tb->fp + 1 )+ 1; //The exttra +1 is for '/0'
+        length = (BUFFER_SIZE - tb->ip + tb->fp + 1) + 1; // extra +1 is for '/0'
     }
     else{
-        length= (tb->fp - tb->ip + 1 )+ 1; //The exttra +1 is for '/0'
+        length= (tb->fp - tb->ip + 1) + 1; // extra +1 is for '/0'
     }
+
     char* lex = (char*)malloc(length*sizeof(char));
     if(tb->arePointersInDifferentBuffers){
-        int x = sizeof(tb->B[0]) - tb->ip;
-        for(int i=0;i<x+1;i++){
-            *(lex+i)=tb->B[tb->bufferToBeLoaded][tb->ip+i];
+        int x = BUFFER_SIZE - tb->ip;
+        for(int i=0;i<x;i++){
+            lex[i] =tb->B[tb->bufferToBeLoaded][tb->ip+i];
         }
         for(int i=0;i<length-x-1;i++){
-            *(lex+i+x+1)=tb->B[!tb->bufferToBeLoaded][i];
-        }
-    }else{
-        for(int i=tb->ip;i<length;i++){
-            *(lex+i)=tb->B[tb->bufferToBeLoaded][i];
+            lex[i+x] = tb->B[!tb->bufferToBeLoaded][i];
         }
     }
+    else{
+        for(int i=0;i<length-1;i++){
+            lex[i]=tb->B[tb->bufferToBeLoaded][tb->ip+i];
+        }
+    }
+    
+    lex[length-1] = '\0';
     return lex;
 }
 
