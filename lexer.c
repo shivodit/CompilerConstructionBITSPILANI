@@ -64,6 +64,7 @@ void initializeTwinBuffer(){
     tb->ip = 0; 
     tb->fp = 0;
     tb->fp_line_no = 1;
+    tb->ip_line_no = 1;
 }
 
 // initialize the lexer with the file pointer
@@ -90,7 +91,7 @@ FILE *getStream(FILE *fp){
     if(charactersRead == 0 || charactersRead < BUFFER_SIZE){
         tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
         // completeFileRead = true;
-        return NULL; // or return fp ?
+        return fp; // or return fp ?
     }
     if(charactersRead == -1){
         printf("Error loading buffer\n");
@@ -107,10 +108,11 @@ char nextc(){
     if (first_call_to_nextc){
         first_call_to_nextc = false;
         if(getStream(curr_file) == NULL){
+            is_eof_file = true;
             return EOF;
         }
     }
-    
+
     if(tb->fp < BUFFER_SIZE-1){
         c = tb->B[!tb->bufferToBeLoaded][tb->fp++]; // since fp is always present in B[!bufferToBeLoaded]
     }
@@ -126,6 +128,7 @@ char nextc(){
         printf("Unexpected error (forward pointer goes out of bound)\n");
         exit(EXIT_FAILURE); // ?
     }
+    if (c == EOF) is_eof_file = true;
     if(c == '\n') tb->fp_line_no++;
     return c;
 }
@@ -147,17 +150,17 @@ void retract(){
 char* getLexeme(){
     int length;
     if(tb->arePointersInDifferentBuffers){
-        length = (BUFFER_SIZE - tb->ip + tb->fp + 1) + 1; // extra +1 is for '/0'
+        length = (BUFFER_SIZE - tb->ip + tb->fp) + 1; // extra +1 is for '/0'
     }
     else{
-        length= (tb->fp - tb->ip + 1) + 1; // extra +1 is for '/0'
+        length = (tb->fp - tb->ip) + 1; // extra +1 is for '/0'
     }
 
     char* lex = (char*)malloc(length*sizeof(char));
     if(tb->arePointersInDifferentBuffers){
         int x = BUFFER_SIZE - tb->ip;
         for(int i=0;i<x;i++){
-            lex[i] =tb->B[tb->bufferToBeLoaded][tb->ip+i];
+            lex[i] =tb->B[!tb->bufferToBeLoaded][tb->ip+i];
         }
         for(int i=0;i<length-x-1;i++){
             lex[i+x] = tb->B[!tb->bufferToBeLoaded][i];
@@ -165,21 +168,22 @@ char* getLexeme(){
     }
     else{
         for(int i=0;i<length-1;i++){
-            lex[i]=tb->B[tb->bufferToBeLoaded][tb->ip+i];
+            lex[i]=tb->B[!tb->bufferToBeLoaded][tb->ip+i];
         }
     }
-    
+        
     lex[length-1] = '\0';
     return lex;
 }
 
 void accept(){
     tb->ip=tb->fp;
+    tb->ip_line_no = tb->fp_line_no;
     return;
 }
 
 int getLineNumber(){
-    return tb->fp_line_no;
+    return tb->ip_line_no;
 }
 
 // TODO: Implement state wise error handling
@@ -193,12 +197,16 @@ tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
     while (retract_num--){
         retract();
     }
-
     char* lx = getLexeme();
+    if (tk == TK_COMMENT){
+        lx = "%";
+    }
+
     tokenInfo* searched_tk = searchToken(symbol_table, lx);
     tokenInfo* tk_info = NULL;
+
     if (searched_tk == NULL){
-        tokenInfo* tk_info = newTokenInfo(tk, lx, getLineNumber(), value);
+        tk_info = newTokenInfo(tk, lx, getLineNumber(), value);
         insertToken(symbol_table, *tk_info);
     }
     else{
@@ -206,6 +214,7 @@ tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
         tk_info = copyTokenInfo(searched_tk);
         tk_info->line_no = getLineNumber();
         tk_info->value = value;
+
     }
 
     accept();
@@ -219,18 +228,16 @@ tokenInfo* getNextToken(){
     int s = 1;
     while (true){
         char c = nextc();
-
         if (c == EOF){
-            is_eof_file = true;
-            // end of file
             return NULL;
         }
 
         switch (DFA_STATE){
             case 0:{
-                if (isEqual(c, ' ')) continue;
-                else if (isEqual(c,'\t')) continue;
-                else if (isEqual(c,'\n')) continue;
+                if (iswhitespace(c)){
+                    accept();
+                    continue;
+                }
                 else if (isEqual(c,'#')) DFA_STATE = 1;
                 else if (isEqual(c,'_')) DFA_STATE = 4;
                 else if (isEqual(c,'@')) DFA_STATE = 35;
@@ -491,14 +498,12 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
     // open file and initializeTwinBuffer
     FILE* fp = fopen(testcasefile, "r");
     initializelexer(fp);
-
     tokenInfo** tokenlist = (tokenInfo**)calloc(TOKEN_LIST_SIZE,sizeof(tokenInfo*));
     int token_count = 0;
     int cap = TOKEN_LIST_SIZE;
 
     while (!is_eof_file){
         tokenInfo* curr_token = getNextToken();
-
         if (curr_token != NULL) tokenlist[token_count++] = curr_token;
         else continue;
 

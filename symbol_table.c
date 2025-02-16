@@ -20,7 +20,7 @@ static const Keyword keywordList[] = {
     {"definetype", TK_DEFINETYPE},
     {"as", TK_AS},
     {"type", TK_TYPE},
-    {"main", TK_MAIN},
+    {"_main", TK_MAIN},
     {"global", TK_GLOBAL},
     {"parameter", TK_PARAMETER},
     {"list", TK_LIST},
@@ -41,7 +41,8 @@ static const Keyword keywordList[] = {
     {"else", TK_ELSE},
     {"and", TK_AND},
     {"or", TK_OR},
-    {"not", TK_NOT}
+    {"not", TK_NOT},
+    {"%", TK_COMMENT}
 };
 static const int NUM_KEYWORDS = sizeof(keywordList) / sizeof(keywordList[0]);
 
@@ -90,7 +91,7 @@ void insertToken(SymbolTable *st, tokenInfo token) {
 // Search for a tokenInfo in the symbol table using its lexeme.
 tokenInfo* searchToken(SymbolTable *st, const char *lexeme) {
     unsigned int index = hashFunction(lexeme);
-    SymbolNode *node = st->table[index];
+    SymbolNode *node = st->table[index]; 
     while (node) {
         if (strcmp(node->token.lexeme, lexeme) == 0)
             return &node->token;
