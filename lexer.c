@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
 twinBuffer* tb; // global twinBuffer struct 
+bool first_call_to_nextc = true; // to check if nextc is called for the first time
 
 // STATE VARIABLES 
 bool is_eof_file = false;
@@ -73,6 +74,7 @@ void initializelexer(FILE* fp){
     initializeTwinBuffer();
     symbol_table = createSymbolTable();
     DFA_STATE = 0;
+    first_call_to_nextc = true;
 }
 
 FILE *getStream(FILE *fp){
@@ -81,10 +83,12 @@ FILE *getStream(FILE *fp){
     }
 
     memset(tb->B[tb->bufferToBeLoaded], EOF, BUFFER_SIZE); 
+
     // initializing the buffer with EOF so that if the reamining data in file is lesser than BUFFER_SIZE, the remaining part of the buffer is filled with EOFs
     // TAG: FREAD MIGHT BE WRONG
     int charactersRead = fread(tb->B[tb->bufferToBeLoaded], sizeof(char), BUFFER_SIZE, fp);
     if(charactersRead == 0 || charactersRead < BUFFER_SIZE){
+        tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
         // completeFileRead = true;
         return NULL; // or return fp ?
     }
@@ -100,9 +104,15 @@ FILE *getStream(FILE *fp){
 // TODO : Verify locally
 char nextc(){
     char c;
+    if (first_call_to_nextc){
+        first_call_to_nextc = false;
+        if(getStream(curr_file) == NULL){
+            return EOF;
+        }
+    }
+    
     if(tb->fp < BUFFER_SIZE-1){
-        tb->fp++;
-        c = tb->B[!tb->bufferToBeLoaded][tb->fp]; // since fp is always present in B[!bufferToBeLoaded]
+        c = tb->B[!tb->bufferToBeLoaded][tb->fp++]; // since fp is always present in B[!bufferToBeLoaded]
     }
     else if(tb->fp == BUFFER_SIZE-1){
         // load the next buffer
@@ -110,7 +120,7 @@ char nextc(){
             return EOF;
         }
         tb->fp = 0;
-        c = tb->B[!tb->bufferToBeLoaded][tb->fp];
+        c = tb->B[!tb->bufferToBeLoaded][tb->fp++];
     }
     else{
         printf("Unexpected error (forward pointer goes out of bound)\n");
@@ -205,7 +215,7 @@ tokenInfo* getNextToken(){
     int s = 1;
     while (true){
         char c = nextc();
-        printf("c = %d: %c\n", c, c);
+
         if (c == EOF){
             is_eof_file = true;
             // end of file
@@ -484,7 +494,9 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
 
     while (!is_eof_file){
         tokenInfo* curr_token = getNextToken();
+
         if (curr_token != NULL) tokenlist[token_count++] = curr_token;
+        else continue;
 
         if (verbose) {
             printTokenInfo(*curr_token);

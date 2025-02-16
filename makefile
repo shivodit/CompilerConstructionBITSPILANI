@@ -37,6 +37,6 @@ distclean: clean
 
 # Run the executable
 run: $(EXEC)
-	./$(EXEC) $(ARGS)
+	./$(EXEC) $(f1) $(f2)
 
 .PHONY: all clean distclean run
