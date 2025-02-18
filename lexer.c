@@ -403,8 +403,10 @@ tokenInfo* getNextToken(){
                     DFA_STATE = 53;
                 }
                 else{
-                    handleError(DFA_STATE, c);
-                    return NULL;
+                    // handleError(DFA_STATE, c);
+                    // return NULL;
+                    // HOTFIX 
+                    return action(TK_NUM,(TAGGED_VALUE){.type = INT_VAL, .val.i = (int)n}, 2);
                 }
                 break;
             case 53:
