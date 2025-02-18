@@ -1,3 +1,8 @@
+// 1. max. lexeme size should be < BUFFER_SIZE
+// also comment length < BUFFER_SIZE
+// 2. handling 2 buffers
+
+
 #include "lexerDef.h"
 #include "helper_function.h"
 #include "symbol_table.h"
@@ -13,6 +18,8 @@
 
 twinBuffer* tb; // global twinBuffer struct 
 bool first_call_to_nextc = true; // to check if nextc is called for the first time
+// debug
+int nextc_count; // to count the number of times nextc is called
 
 // STATE VARIABLES 
 bool is_eof_file = false;
@@ -67,6 +74,11 @@ void initializeTwinBuffer(){
     tb->fp = 0;
     tb->fp_line_no = 1;
     tb->ip_line_no = 1;
+    tb->charactersReadLastTime = BUFFER_SIZE;
+    nextc_count = 0;
+    // debug
+    printf("Twin buffer initialized\n");
+    printf("bufferToBeLoaded is %d\n", tb->bufferToBeLoaded);
 }
 
 // initialize the lexer with the file pointer
@@ -81,6 +93,8 @@ void initializelexer(FILE* fp){
 }
 
 FILE *getStream(FILE *fp){
+    // debug
+    printf("getStream called\n");
     if(fp == NULL){ // or if(completeFileRead)
         return NULL; // or return fp ?
     }
@@ -89,42 +103,82 @@ FILE *getStream(FILE *fp){
 
     // initializing the buffer with EOF so that if the reamining data in file is lesser than BUFFER_SIZE, the remaining part of the buffer is filled with EOFs
     // TAG: FREAD MIGHT BE WRONG
-    int charactersRead = fread(tb->B[tb->bufferToBeLoaded], sizeof(char), BUFFER_SIZE, fp);
-    if(charactersRead == 0 || charactersRead < BUFFER_SIZE){
+    tb->charactersReadLastTime = fread(tb->B[tb->bufferToBeLoaded], sizeof(char), BUFFER_SIZE, fp);
+    if(tb->charactersReadLastTime == 0 || tb->charactersReadLastTime < BUFFER_SIZE){
+        // debug
+        printf("%d characters read\n", tb->charactersReadLastTime);
+        printf("Buffer %d loaded and End of file reached\n", tb->bufferToBeLoaded);
         tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
         // completeFileRead = true;
         return fp; // or return fp ?
     }
-    if(charactersRead == -1){
+    if(tb->charactersReadLastTime == -1){
         printf("Error loading buffer\n");
     }
-
+    // if(charactersReadLastTime < BUFFER_SIZE){
+    //     if (feof(fp)) {
+    //         // debug
+    //         printf("%d characters read\n", charactersReadLastTime);
+    //         printf("Buffer %d loaded and End of file reached\n", tb->bufferToBeLoaded);
+    //         tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
+    //         return fp;
+    //     }
+    //     if (ferror(fp)) {
+    //         printf("Error loading buffer\n");
+    //         return NULL;
+    //     }
+    // }
+    // // debug
+    printf("Buffer %d loaded\n", tb->bufferToBeLoaded);
+    printf("%d characters read\n",tb->charactersReadLastTime);
     tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
+    // debug
+    printf("BufferToBeLoaded is %d\n", tb->bufferToBeLoaded);
     return fp;
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
 // TODO : Verify locally
 char nextc(){
+    // debug
+    nextc_count++;
+    printf("nextc no: %d\n", nextc_count);
+    printf("Line: %d; DFA STATE: %d; nextc called and bufferToBeLoaded is %d\n", tb->fp_line_no, DFA_STATE, tb->bufferToBeLoaded);
     char c;
     if (first_call_to_nextc){
+        // debug
+        printf("First call to nextc\n");
         first_call_to_nextc = false;
         if(getStream(curr_file) == NULL){
+            // debug
+            printf("End of file reached in first call to next c if clause and getstream if clause\n");
             is_eof_file = true;
             return EOF;
         }
     }
 
-    if(tb->fp < BUFFER_SIZE-1){
+    if(tb->fp < BUFFER_SIZE){
+        // debug
+        printf("tb->fp < BUFFER_SIZE\n");
         c = tb->B[!tb->bufferToBeLoaded][tb->fp++]; // since fp is always present in B[!bufferToBeLoaded]
+        // debug
+        printf("character read is %c\n", c);
     }
-    else if(tb->fp == BUFFER_SIZE-1){
+    else if(tb->fp == BUFFER_SIZE){
         // load the next buffer
+        // debug
+        printf("tb->fp == BUFFER_SIZE and attempting to call getstream and return next char\n");
         if(getStream(curr_file) == NULL){
+            // debug
+            printf("End of file reached in next c else if clause\n");
             return EOF;
         }
         tb->fp = 0;
+        // debug
+        printf("Buffer %d loaded and tb->fp is set to 0\n", !tb->bufferToBeLoaded);
         c = tb->B[!tb->bufferToBeLoaded][tb->fp++];
+        // debug
+        printf("character read is %c and bufferToBeLoaded is %d\n", c, tb->bufferToBeLoaded);
     }
     else{
         printf("Unexpected error (forward pointer goes out of bound)\n");
@@ -132,6 +186,8 @@ char nextc(){
     }
     if (c == EOF) is_eof_file = true;
     if(c == '\n') tb->fp_line_no++;
+    // debug
+    printf("about to return character %c and bufferToBeLoaded is %d\n", c, tb->bufferToBeLoaded);
     return c;
 }
 
@@ -141,7 +197,9 @@ void retract(){
         tb->arePointersInDifferentBuffers = !tb->arePointersInDifferentBuffers;
         tb->fp = sizeof(tb->B[0]) - 1;  // Assuming fixed buffer size, adjust as needed
         //Move the file pointer back, otherwise the upcoming data will be loaded twice
-        fseek(curr_file, sizeof(tb->B[0]), SEEK_CUR);
+        // DEBUG
+        printf("Just before fseek\n");
+        fseek(curr_file, -tb->charactersReadLastTime, SEEK_CUR);
         // Mark the buffer as the another buffer needs to be reloaded if we are moving to the previous buffer
         tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
     } else {
@@ -277,6 +335,17 @@ tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
     char* lx = getLexeme();
     if (tk == TK_COMMENT){
         lx = "%";
+    }
+    if (tk == TK_FUNID || tk == TK_ID){
+        int len = strlen(lx);
+
+        if (len > 20 && tk == TK_ID){
+            handleError(5,-1);
+            return NULL;
+        }
+        else if (len>30 && tk == TK_FUNID){
+            handleError(9, -1);
+        }
     }
 
     tokenInfo* searched_tk = searchToken(symbol_table, lx);
