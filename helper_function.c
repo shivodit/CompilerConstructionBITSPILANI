@@ -1,4 +1,5 @@
 #include "lexerDef.h"
+#include "parserDef.h"
 #include <stdbool.h>
 #include <stdio.h>  
 
@@ -59,9 +60,88 @@ const char *tokenList[] = {
     "TK_EQ",
     "TK_GT",
     "TK_GE",
-    "TK_NE"
+    "TK_NE",
+    "EPSILON",
+    "DOLLAR",
+    "ERROR"
 };
 
+const char *nonTermList[] = {
+    "OTHERFUNCTIONS",
+    "MAINFUNCTION",
+    "STMTS",
+    "FUNCTION",
+    "INPUT_PAR",
+    "OUTPUT_PAR",
+    "PARAMETER_LIST",
+    "DATATYPE",
+    "REMAINING_LIST",
+    "PRIMITIVEDATATYPE",
+    "CONSTRUCTEDDATATYPE",
+    "TYPEDEFINITIONS",
+    "DECLARATIONS",
+    "OTHERSTMTS",
+    "RETURNSTMT",
+    "TYPEDEFINITION",
+    "ACTUALORREDEFINED",
+    "DEFINETYPESTMT",
+    "FIELDDEFINITIONS",
+    "FIELDDEFINITION",
+    "MOREFIELDS",
+    "FIELDTYPE",
+    "DECLARATION",
+    "GLOBAL_OR_NOT",
+    "STMT",
+    "ASSIGNMENTSTMT",
+    "ITERATIVESTMT",
+    "CONDITIONALSTMT",
+    "IOSTMT",
+    "FUNCALLSTMT",
+    "SINGLEORRECORUNIONID",
+    "ARITHMETICEXPRESSION",
+    "OPTION_SINGLE_CONSTRUCTED",
+    "ONEEXPANSION",
+    "MOREEXPANSIONS",
+    "OUTPUTPARAMETERS",
+    "INPUTPARAMETERS",
+    "IDLIST",
+    "BOOLEANEXPRESSION",
+    "ELSEPART",
+    "VAR",
+    "TERM",
+    "EXPPRIME",
+    "LOWPRECEDENCEOPERATORS",
+    "FACTOR",
+    "TERMPRIME",
+    "HIGHPRECEDENCEOPERATORS",
+    "LOGICALOP",
+    "RELATIONALOP",
+    "OPTIONALRETURN",
+    "MORE_IDS",
+    "A"
+};
+
+int getNonTermIndex(char* nt){
+    for (int i = 0; i < sizeof(nonTermList)/sizeof(nonTermList[0]); i++){
+        if (strcmp(nt, nonTermList[i]) == 0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int getTokenIndex(char* tk){
+    for (int i = 0; i < sizeof(tokenList)/sizeof(tokenList[0]); i++){
+        if (strcmp(tk, tokenList[i]) == 0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+const char* getNonTermName(NON_TERMINAL nt){
+    return nonTermList[nt];
+}
 
 const char* getTokenName(TOKEN tk){
     return tokenList[tk];

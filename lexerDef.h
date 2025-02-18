@@ -5,7 +5,7 @@
 // #define str(x) #x
 // #define xstr(x) str(x)
 
-#define BUFFER_SIZE 128 // buffer size of a single buffer
+#define BUFFER_SIZE 4096 // buffer size of a single buffer
 #define TOKEN_LIST_SIZE 4096
 
 typedef enum {
@@ -14,7 +14,9 @@ typedef enum {
     TK_GLOBAL, TK_PARAMETER, TK_LIST, TK_SQL, TK_SQR, TK_INPUT, TK_OUTPUT, TK_INT, TK_REAL, 
     TK_COMMA, TK_SEM, TK_COLON, TK_DOT, TK_ENDWHILE, TK_OP, TK_CL, TK_IF, TK_THEN, TK_ENDIF, TK_READ,
     TK_WRITE, TK_RETURN, TK_PLUS, TK_MINUS, TK_MUL, TK_DIV, TK_CALL, TK_RECORD, TK_ENDRECORD, TK_ELSE, 
-    TK_AND, TK_OR, TK_NOT, TK_LT, TK_LE, TK_EQ, TK_GT, TK_GE, TK_NE
+    TK_AND, TK_OR, TK_NOT, TK_LT, TK_LE, TK_EQ, TK_GT, TK_GE, TK_NE, 
+    // auxiliary symbols
+    EPSILON, DOLLAR, ERROR
 } TOKEN;
 
 typedef enum{

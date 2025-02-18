@@ -3,7 +3,7 @@
 
 #include "lexerDef.h"
 
-#define SYMBOL_TABLE_SIZE 211  // A prime number for better distribution
+#define SYMBOL_TABLE_SIZE 397  // A prime number for better distribution
 
 // Node structure for each entry in the symbol table's linked list.
 typedef struct SymbolNode {

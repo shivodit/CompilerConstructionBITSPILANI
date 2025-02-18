@@ -1,5 +1,44 @@
+#ifndef PARSER_DATA_DEF
+#define PARSER_DATA_DEF
 #include "lexerDef.h"
+#include "stackDef.h"
 
-typedef enum Symbol{
-    
+typedef enum NON_TERMINAL {
+    // non-terminal symbols
+    OTHERFUNCTIONS, MAINFUNCTION, STMTS, FUNCTION, INPUT_PAR, OUTPUT_PAR, PARAMETER_LIST, DATATYPE, REMAINING_LIST, PRIMITIVEDATATYPE, 
+    CONSTRUCTEDDATATYPE, TYPEDEFINITIONS, DECLARATIONS, OTHERSTMTS, RETURNSTMT, TYPEDEFINITION, ACTUALORREDEFINED, 
+    DEFINETYPESTMT, FIELDDEFINITIONS, FIELDDEFINITION, MOREFIELDS, FIELDTYPE, DECLARATION, GLOBAL_OR_NOT, STMT, 
+    ASSIGNMENTSTMT, ITERATIVESTMT, CONDITIONALSTMT, IOSTMT, FUNCALLSTMT, SINGLEORRECORUNIONID, ARITHMETICEXPRESSION, 
+    OPTION_SINGLE_CONSTRUCTED, ONEEXPANSION, MOREEXPANSIONS, OUTPUTPARAMETERS, INPUTPARAMETERS, IDLIST, BOOLEANEXPRESSION, 
+    ELSEPART, VAR, TERM, EXPPRIME, LOWPRECEDENCEOPERATORS, FACTOR, TERMPRIME, HIGHPRECEDENCEOPERATORS, LOGICALOP, 
+    RELATIONALOP, OPTIONALRETURN, MORE_IDS, A
+} NON_TERMINAL;
+
+typedef struct Symbol{
+    bool is_terminal;
+    union{
+        NON_TERMINAL nt;
+        TOKEN t;
+    } symbol;
 } Symbol;
+
+typedef struct Rule{
+    NON_TERMINAL from;
+    int num_rhs;
+    Symbol* to;
+} Rule;
+
+typedef struct ParseTable{
+    int num_terminals;
+    int num_non_terminals;
+    int** table;
+} ParseTable;
+
+typedef struct FirstAndFollow{
+    int num_terminals;
+    int num_non_terminals;
+    int** first;
+    int** follow;
+} FirstAndFollow;
+
+#endif
