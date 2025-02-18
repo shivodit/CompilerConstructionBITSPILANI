@@ -5,7 +5,7 @@
 // #define str(x) #x
 // #define xstr(x) str(x)
 
-#define BUFFER_SIZE 4096 // buffer size of a single buffer
+#define BUFFER_SIZE 128 // buffer size of a single buffer
 #define TOKEN_LIST_SIZE 4096
 
 typedef enum {
@@ -47,6 +47,7 @@ typedef struct{
     int fp; // pointer to the current char in lexeme
     int fp_line_no; // line number of the char at fp (basically, line no. of lexeme)
     int ip_line_no;
+    int charactersReadLastTime;
 } twinBuffer;
 
 #endif

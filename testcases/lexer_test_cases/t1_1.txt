@@ -1,0 +1,4 @@
+% Test case 1: For testing your lexer
+%Do not run your parser on this test case
+
+%The following program computes the function value for the user defined input
