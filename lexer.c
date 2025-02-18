@@ -189,10 +189,84 @@ int getLineNumber(){
     return tb->ip_line_no;
 }
 
-// TODO: Implement state wise error handling
 void handleError(int current_state, char c){
     int line_no = getLineNumber();
-    printf("Error at line %d: Invalid character %c in state %d\n", line_no, c, current_state);
+    char* lexeme = getLexeme();
+    // HOTFIX
+    lexeme[strlen(lexeme)-1] = '\0';
+    // printf("Error at line %d: Invalid character %c in state %d\n", line_no, c, current_state);
+    
+    switch(current_state){
+        case 0:
+            printf("Line no. %d: Invalid character <%c>\n", line_no, c);
+            break;
+        case 1:
+            retract();
+            printf("Line no. %d: Invalid character <%c> after # expected [a-z]\n", line_no, c);
+            break;
+        case 4:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after _ expected [a-z]\n", line_no, lexeme);
+            break;
+        case 52:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s>\n", line_no, lexeme);
+            break;
+        case 53:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s>\n", line_no, lexeme);
+            break;
+        case 55:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after E expected [0-9] or [+/-]\n", line_no, lexeme);
+            break;
+        case 56:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after [+/-] expected [0-9]\n", line_no, lexeme);
+            break;
+        case 57:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after [0-9] expected [0-9]\n", line_no, lexeme);
+            break;
+        // no retract since case 5 and 9 are handled in action
+        case 5:
+            if (c == -1) {
+                printf("Line no. %d: Length of Variable Identifier should not exceed 20 characters\n", line_no);
+            }
+            break;
+        case 9:
+            if (c == -1){
+                printf("Line no. %d: Length of Function Identifier should not exceed 30 characters\n", line_no);
+            }
+            break;
+        case 19:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after < expected -\n", line_no, lexeme);
+            break;
+        case 24:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after = expected =\n", line_no, lexeme);
+            break;
+        case 29:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after ! expected =\n", line_no, lexeme);
+            break;
+        case 35:
+        case 36:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after @ expected @\n", line_no, lexeme);
+            break;
+        case 38:
+        case 39:
+            retract();
+            printf("Line no. %d: Invalid pattern <%s> after & expected &\n", line_no, lexeme);
+            break;
+        default:
+            printf("Line no. %d: An unknown compilation error has occured for <%s>\n", line_no, lexeme);
+            break;
+    }
+    accept();
+        
     return;
 }
 
