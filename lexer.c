@@ -305,10 +305,6 @@ tokenInfo* getNextToken(){
     int s = 1;
     while (true){
         char c = nextc();
-        if (c == EOF){
-            return NULL;
-        }
-
         switch (DFA_STATE){
             case 0:{
                 if (iswhitespace(c)){
@@ -567,6 +563,11 @@ tokenInfo* getNextToken(){
                 handleError(DFA_STATE, c);
                 return NULL;
                 break;
+        }
+
+        // FIX for last token not being recognized if file ends without a newline
+        if (c == EOF){
+            return NULL;
         }
     }
 }
