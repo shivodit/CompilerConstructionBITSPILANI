@@ -2,7 +2,7 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -g -lm
+CFLAGS = -Wall -Wextra -g -lm -o2
 
 # Source files
 SRCS = driver.c lexer.c helper_function.c symbol_table.c parser.c

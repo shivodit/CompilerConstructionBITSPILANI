@@ -76,7 +76,7 @@ bool isInRange(char c, char start, char end){
 }
 
 bool iswhitespace(char c){
-    return c == ' ' || c == '\t' || c == '\n';
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
 void printTokenInfo(tokenInfo tk){
