@@ -25,7 +25,18 @@ FILE* curr_file = NULL;
 SymbolTable* symbol_table;
 int DFA_STATE = 0; // current state of the DFA
 
+cleanup(){
+    // free the memory allocated for twinBuffer
+    free(tb->B[0]);
+    free(tb->B[1]);
+    free(tb);
+    freeSymbolTable(symbol_table);
+    fclose(curr_file);
+}
 // bool completeFileRead = false; // stores whether the input file has been completely read
+bool has_file_ended(){
+    return is_eof_file;
+}
 
 // create new token 
 tokenInfo* newTokenInfo(TOKEN tk, char* lx, int line_no, TAGGED_VALUE value){
@@ -624,12 +635,7 @@ tokenInfo** getAllTokens(char* testcasefile, bool verbose){
             tokenlist = (tokenInfo**)realloc(tokenlist, cap*sizeof(tokenInfo*));
         }
     }
-    // free the memory allocated for twinBuffer
-    free(tb->B[0]);
-    free(tb->B[1]);
-    free(tb);
-    freeSymbolTable(symbol_table);
-    fclose(fp);
+    cleanup();
     return tokenlist;
 }
 

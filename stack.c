@@ -23,7 +23,8 @@ Stack* createStack() {
 
     // pushing dollar symbol onto the stack 
     // VERIFY
-    push(stack, DOLLAR); // Push the dollar symbol onto the stack
+    Symbol dollar = {true, .symbol.t = DOLLAR};
+    push(stack, dollar); // Push the dollar symbol onto the stack
     return stack;
 }
 

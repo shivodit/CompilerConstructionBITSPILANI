@@ -1,7 +1,6 @@
 #include "parserDef.h"
 
-
 FirstAndFollow ComputeFirstAndFollowSets (Rule* G);
-createParseTable(FirstAndFollow F, ParseTable* T);
-parseInputSourceCode(char *testcaseFile, ParseTable T);
+ParseTable* createParseTable(FirstAndFollow F, ParseTable* T);
+TreeNode* parseInputSourceCode(char *testcasefile, ParseTable T, bool verbose);
 void printParseTree(TreeNode* PT, char *outfile);
