@@ -42,11 +42,17 @@ typedef struct ParseTable{
     int** table;
 } ParseTable;
 
+typedef struct FFEntry{
+    NON_TERMINAL non_terminal;
+    int num_first;
+    TERMINAL* first;
+    int num_follow;
+    TERMINAL* follow;
+} FFEntry;
+
 typedef struct FirstAndFollow{
-    int num_terminals;
-    int num_non_terminals;
-    int** first;
-    int** follow;
+    int num_entries;
+    FFEntry* entries;
 } FirstAndFollow;
 
 #endif

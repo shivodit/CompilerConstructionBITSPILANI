@@ -27,6 +27,11 @@ TreeNode* parseInputSourceCode(char *testcasefile, ParseTable T, bool verbose){
     Stack* stack = createStack();
     TreeNode* parse_tree = createTreeNode((Symbol){false, .symbol.nt=PROGRAM}, false, NULL);
 
+    RuleList* rules = readRules("final_grammar_index_rep.txt");
+    // FirstAndFollow* F = ComputeFirstAndFollowSets(*rules);
+    // ParseTable* T = createParseTable(*F);
+
+
     // init lexer
     FILE* fp = fopen(testcasefile, "r");
     initializelexer(fp);
