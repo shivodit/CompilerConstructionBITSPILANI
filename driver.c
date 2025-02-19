@@ -3,6 +3,7 @@
 #include <time.h>
 #include "lexer.h"
 #include "parser.h"
+#include "parseTree.h"
 
 void remove_comments(char *filename);
 void print_token_list(char *filename);
@@ -102,7 +103,15 @@ void print_token_list(char *filename) {
 }
 
 void parse_and_verify(char *filename, char *output_filename) {
-    printf("Parsing and verifying (NOT YET IMPLEMENTED) %s output file is %s ...\n", filename, output_filename);
+    // printf("Parsing and verifying (NOT YET IMPLEMENTED) %s output file is %s ...\n", filename, output_filename);
+    // DEBUG statements inside parser.c initailizeparser
+    initializeparser("final_grammar_index_clean.txt", "first_follow.txt");
+
+    TreeNode* parse_tree = parseInputSourceCode(filename, true);
+
+    printParseTree(parse_tree, output_filename);
+    
+    removeNode(parse_tree);
 }
 
 void print_execution_time(char *filename, char *output_filename) {

@@ -25,7 +25,7 @@ FILE* curr_file = NULL;
 SymbolTable* symbol_table;
 int DFA_STATE = 0; // current state of the DFA
 
-cleanup(){
+void cleanup(){
     // free the memory allocated for twinBuffer
     free(tb->B[0]);
     free(tb->B[1]);

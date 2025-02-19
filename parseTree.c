@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 // Create a new tree node
 TreeNode* createTreeNode(Symbol symbol, bool isleaf, tokenInfo* token) {
     TreeNode* node = (TreeNode*)malloc(sizeof(TreeNode));

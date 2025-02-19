@@ -18,4 +18,4 @@ tokenInfo* getNextToken();
 tokenInfo** getAllTokens(char* testcasefile, bool verbose);
 void freeTokenInfo(tokenInfo* tk);
 bool has_file_ended();
-cleanup();
+void cleanup();

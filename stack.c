@@ -2,7 +2,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-StackNode* createStackNode(Symbol symbol) {
+bool isEmpty(Stack* stack);
+StackNode* createStackNode(Symbol symbol, TreeNode* parent);
+Stack* createStack();
+void push(Stack* stack, Symbol symbol, TreeNode* parent);
+Symbol pop(Stack* stack);
+Symbol top(Stack* stack);
+TreeNode* topParent(Stack* stack);
+void freeStack(Stack* stack);
+
+
+// Check if the stack is empty
+bool isEmpty(Stack* stack) {
+    return stack->top == NULL;
+}
+
+
+StackNode* createStackNode(Symbol symbol, TreeNode* parent) {
     StackNode* node = (StackNode*)malloc(sizeof(StackNode));
     if (!node) {
         printf("Failed to allocate stack node\n");
@@ -10,6 +26,7 @@ StackNode* createStackNode(Symbol symbol) {
     }
     node->symbol = symbol;
     node->next = NULL;
+    node->parent = parent;
     return node;
 }
 
@@ -25,12 +42,12 @@ Stack* createStack() {
     // pushing dollar symbol onto the stack 
     // VERIFY
     Symbol dollar = {true, .symbol.t = DOLLAR};
-    push(stack, dollar); // Push the dollar symbol onto the stack
+    push(stack, dollar, NULL); // Push the dollar symbol onto the stack
     return stack;
 }
 
 // Push a symbol onto the stack
-void push(Stack* stack, Symbol symbol) {
+void push(Stack* stack, Symbol symbol, TreeNode* parent) {
     StackNode* node = (StackNode*)malloc(sizeof(StackNode));
     if (!node) {
         printf("Failed to allocate stack node\n");
@@ -38,6 +55,7 @@ void push(Stack* stack, Symbol symbol) {
     }
     node->symbol = symbol;
     node->next = stack->top;
+    node->parent = parent;
     stack->top = node;
 }
 
@@ -63,9 +81,13 @@ Symbol top(Stack* stack) {
     return stack->top->symbol;
 }
 
-// Check if the stack is empty
-bool isEmpty(Stack* stack) {
-    return stack->top == NULL;
+// Get the parent of the top symbol from the stack
+TreeNode* topParent(Stack* stack) {
+    if (isEmpty(stack)) {
+        printf("Stack is empty\n");
+        exit(EXIT_FAILURE); // Exit if stack is empty
+    }
+    return stack->top->parent;
 }
 
 // Free the stack

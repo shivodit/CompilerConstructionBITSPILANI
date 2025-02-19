@@ -3,7 +3,9 @@
 #include "lexerDef.h"
 // #include "stackDef.h"
 // #include "parseTree.h"
-
+// Helper macros for numbers of nonterminals and terminals
+#define NUM_NONTERMINALS (A + 1)   // Last enumerator of NON_TERMINAL is A.
+#define NUM_TERMINALS (ERROR + 1)  // Last enumerator of TOKEN is ERROR.
 typedef enum NON_TERMINAL {
     // non-terminal symbols
     PROGRAM, OTHERFUNCTIONS, MAINFUNCTION, STMTS, FUNCTION, INPUT_PAR, OUTPUT_PAR, PARAMETER_LIST, DATATYPE, REMAINING_LIST, PRIMITIVEDATATYPE, 
