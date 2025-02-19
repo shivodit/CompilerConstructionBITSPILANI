@@ -242,7 +242,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
         }
         
         // main logic
-        Symbol* top_symbol = top(stack);
+        Symbol top_symbol = top(stack);
 
         
         if (curr_token == NULL) {
@@ -269,7 +269,6 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             printTokenInfo(*curr_token);
         }
         
-        if (top_symbol.is_terminal){
         if (top_symbol.is_terminal){
             // terminal symbol
             if (top_symbol.symbol.t == curr_token->token){
@@ -309,7 +308,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
 }
 
 void printParseTree(TreeNode* PT, char *outfile){
-
+    
 }
 
 
