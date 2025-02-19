@@ -4,9 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+RuleList* readRules(char* grammarfile){
+    // TODO
+    return NULL;
+}
 
+FirstAndFollow* readFirstAndFollowSets(char* first, char* follow){
+    // TODO
+    return NULL;
+}
 
-FirstAndFollow* ComputeFirstAndFollowSets (Rule* G){
+FirstAndFollow* ComputeFirstAndFollowSets (RuleList G){
     // TODO
     return NULL;
 }
@@ -31,9 +39,9 @@ TreeNode* parseInputSourceCode(char *testcasefile, ParseTable T, bool verbose){
         if (verbose) {
             printTokenInfo(*curr_token);
         }
-
         // main logic 
-
+        
+        
     }
     cleanup();
 }
