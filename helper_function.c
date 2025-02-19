@@ -67,6 +67,7 @@ const char *tokenList[] = {
 };
 
 const char *nonTermList[] = {
+    "PROGRAM",
     "OTHERFUNCTIONS",
     "MAINFUNCTION",
     "STMTS",
