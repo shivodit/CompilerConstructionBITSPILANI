@@ -1,4 +1,5 @@
 #include "parserDef.h"
+#include "parseTreeDef.h"
 
 RuleList* readRules(char* grammarfile);
 FirstAndFollow ComputeFirstAndFollowSets (RuleList G);

@@ -38,22 +38,22 @@ void addChild(TreeNode* parent, TreeNode* child) {
 }
 
 // free the treenode and its children
-void free(TreeNode* node) {
+void freeNode(TreeNode* node) {
     if (node == NULL) return;
     TreeNode* child = node->child;
     while (child != NULL) {
         TreeNode* next = child->next;
-        free(child);
+        freeNode(child);
         child = next;
     }
     free(node);
 }
 
 // remove a node from the tree
-void remove(TreeNode* node) {
+void removeNode(TreeNode* node) {
     // assuming if node is root then remove the whole tree
     if (node->parent == NULL){
-        free(node);
+        freeNode(node);
         return;
     }
 
@@ -66,7 +66,7 @@ void remove(TreeNode* node) {
             node->next->prev = node->prev;
         }
     }
-    
-    free(node);
+
+    freeNode(node);
     return;
 }

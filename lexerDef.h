@@ -2,8 +2,6 @@
 #define LEXER_DATA_DEF
 
 #include <stdbool.h>
-// #define str(x) #x
-// #define xstr(x) str(x)
 
 #define BUFFER_SIZE 4096 // buffer size of a single buffer
 #define TOKEN_LIST_SIZE 4096
