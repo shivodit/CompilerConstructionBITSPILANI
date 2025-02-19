@@ -1,0 +1,5 @@
+PROGRAM -> OTHERFUNCTION MAINFUNCTION
+0 -> 1 2 
+
+if terminal 
+0 -> _1 _2
