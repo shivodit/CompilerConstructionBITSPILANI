@@ -66,7 +66,7 @@ void remove(TreeNode* node) {
             node->next->prev = node->prev;
         }
     }
-
+    
     free(node);
     return;
 }
