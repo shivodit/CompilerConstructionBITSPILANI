@@ -1,6 +1,7 @@
 #include "parserDef.h"
 #include "parseTree.h"
 #include "lexer.h"
+#include "stack.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,8 +16,48 @@ initailizeparser(char* grammarfile, char* first, char* follow){
 }
 
 RuleList* readRules(char* grammarfile){
-    // TODO
-    return NULL;
+    RuleList* rl = (RuleList*)malloc(sizeof(RuleList));
+    // open file
+    FILE* fp = fopen(grammarfile, "r");
+    if (fp == NULL){
+        printf("Error: Could not open file %s\n", grammarfile);
+        exit(EXIT_FAILURE);
+    }
+
+    // read number of lines
+    int num_rules;
+    fscanf(fp, "%d", &num_rules);
+
+    // read rules
+    Rule* rules = (Rule*)malloc(num_rules*sizeof(Rule));
+    for (int i=0; i<num_rules; i++){
+        int lhs;
+        int num_rhs = 0;
+        fscanf(fp, "%d %d ->", &num_rhs, &lhs);
+        Symbol* rhs = (Symbol*)malloc(num_rhs*sizeof(Symbol));
+        for (int j=0; j<num_rhs; j++){
+            int is_terminal;
+            int symbol;
+            
+            int num = -1;
+            if (fscanf(fp, "%d", &num) == 1){
+                is_terminal = 1;
+                symbol = num;
+            }
+            else{
+                is_terminal = 0;
+                fscanf(fp, "_%d", &symbol);
+            }
+            rhs[j] = (Symbol){is_terminal, .symbol = {.t = symbol}};
+        }
+        rules[i] = (Rule){lhs, num_rhs, rhs};
+    }
+
+    rl->num_rules = num_rules;
+    rl->rules = rules;
+
+    fclose(fp);
+    return rl;
 }
 
 FirstAndFollow* readFirstAndFollowSets(char* first, char* follow){
@@ -52,8 +93,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
         token_count++;
         
         // main logic
-        Symbol* top_symbol = top(stack);
-
+        Symbol top_symbol = top(stack);
         
         if (curr_token == NULL) {
             if (verbose) {
@@ -61,7 +101,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             }
             
             // STOP CONDITION
-            if (has_file_ended() && top_symbol->is_terminal && top_symbol->symbol.t == DOLLAR){
+            if (has_file_ended() && top_symbol.is_terminal && top_symbol.symbol.t == DOLLAR){
                 break;             
             }
             else if (has_file_ended()){
@@ -78,9 +118,9 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             printTokenInfo(*curr_token);
         }
         
-        if (top_symbol->is_terminal){
+        if (top_symbol.is_terminal){
             // terminal symbol
-            
+
         }
         else{
             // non-terminal symbol 
