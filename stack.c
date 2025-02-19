@@ -1,5 +1,6 @@
 #include "stackDef.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 StackNode* createStackNode(Symbol symbol) {
     StackNode* node = (StackNode*)malloc(sizeof(StackNode));

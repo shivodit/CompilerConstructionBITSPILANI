@@ -26,9 +26,9 @@ typedef struct Symbol{
 } Symbol;
 
 typedef struct Rule{
-    NON_TERMINAL from;
+    NON_TERMINAL lhs;
     int num_rhs;
-    Symbol* to;
+    Symbol* rhs;
 } Rule;
 
 typedef struct RuleList{
