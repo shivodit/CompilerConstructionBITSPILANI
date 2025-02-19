@@ -252,7 +252,6 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             
             // STOP CONDITION
             if (has_file_ended() && top_symbol.is_terminal && top_symbol.symbol.t == DOLLAR){
-            if (has_file_ended() && top_symbol.is_terminal && top_symbol.symbol.t == DOLLAR){
                 break;             
             }
             else if (has_file_ended()){
