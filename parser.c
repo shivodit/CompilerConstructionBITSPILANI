@@ -9,10 +9,10 @@ RuleList* grammar;
 FirstAndFollow* F;
 ParseTable* T;
 
-initailizeparser(char* grammarfile, char* first, char* follow){
+initailizeparser(char* grammarfile, char* first_follow){
     grammar = readRules(grammarfile);
-    F = readFirstAndFollowSets(first, follow);
-    T = createParseTable(*F);
+    F = readFirstAndFollowSets(first_follow);
+    T = createParseTable(*F,T);
 }
 
 bool exists(int* arr, int count, int element) {
@@ -115,9 +115,40 @@ RuleList* readRules(char* grammarfile){
     return rl;
 }
 
-FirstAndFollow* readFirstAndFollowSets(char* first, char* follow){
-    // TODO
-    return NULL;
+FirstAndFollow* readFirstAndFollowSets(char* first_follow){
+    FILE* fp = fopen(first_follow, "r");
+
+    if (fp == NULL){
+        printf("Error: Could not open file %s\n", first_follow);
+        exit(EXIT_FAILURE);
+    }
+
+    FirstAndFollow* F = (FirstAndFollow*)malloc(sizeof(FirstAndFollow));
+    int num_entries;
+    fscanf(fp, "%d", &num_entries);
+    F->num_entries = num_entries;
+    FFEntry* entries = (FFEntry*)malloc(num_entries*sizeof(FFEntry));
+    int nt = 0;
+    for (int i=0; i<num_entries; i++){
+        int num_first;
+        int num_follow;
+        fscanf(fp, "%d %d", &num_first, &num_follow);
+        TERMINAL* first = (TERMINAL*)malloc(num_first*sizeof(TERMINAL));
+        TERMINAL* follow = (TERMINAL*)malloc(num_follow*sizeof(TERMINAL));
+        for (int j=0; j<num_first; j++){
+            int f;
+            fscanf(fp, "%d", &f);
+            first[j] = f;
+        }
+        for (int j=0; j<num_follow; j++){
+            int f;
+            fscanf(fp, "%d", &f);
+            follow[j] = f;
+        }
+        entries[i] = (FFEntry){nt++, num_first, first, num_follow, follow};
+    }
+    F->entries = entries;
+    return F;
 }
 
 FirstAndFollow* ComputeFirstAndFollowSets (RuleList G){
