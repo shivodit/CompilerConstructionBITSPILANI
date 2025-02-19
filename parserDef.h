@@ -2,6 +2,7 @@
 #define PARSER_DATA_DEF
 #include "lexerDef.h"
 #include "stackDef.h"
+#include "parseTree.h"
 
 typedef enum NON_TERMINAL {
     // non-terminal symbols
