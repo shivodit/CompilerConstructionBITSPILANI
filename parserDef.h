@@ -31,6 +31,11 @@ typedef struct Rule{
     Symbol* to;
 } Rule;
 
+typedef struct RuleList{
+    int num_rules;
+    Rule* rules;
+} RuleList;
+
 typedef struct ParseTable{
     int num_terminals;
     int num_non_terminals;
