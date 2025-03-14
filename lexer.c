@@ -500,6 +500,7 @@ tokenInfo* getNextToken(){
                 break;
             case 8:
                 if(isInRange(c,'2','7')) DFA_STATE = 9;
+                else if(isInRange(c,'a','z')) DFA_STATE = 12;
                 else{
                     return action(TK_FIELDID,(TAGGED_VALUE){.type = NA}, 1);
                 }

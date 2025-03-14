@@ -48,7 +48,7 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
         // Process every production: A -> X1 X2 ... Xn
         for (r = 0; r < G.num_rules; r++) {
             Rule rule = G.rules[r];
-            int A = rule.lhs;
+            int NT = rule.lhs;
             bool productionNullable = true; // Assume production is nullable until proven otherwise.
             for (i = 0; i < rule.num_rhs; i++) {
                 Symbol sym = rule.rhs[i];
@@ -56,12 +56,12 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
                     // If the symbol is terminal:
                     // If it is the EPSILON token then (by convention) we add EPSILON.
                     if (sym.symbol.t == EPSILON) {
-                        if (addToSet(first[A], EPSILON))
+                        if (addToSet(first[NT], EPSILON))
                             changed = true;
                         // For a proper epsilon-production, there should be no other symbols.
                         productionNullable = true;
                     } else {
-                        if (addToSet(first[A], sym.symbol.t))
+                        if (addToSet(first[NT], sym.symbol.t))
                             changed = true;
                         productionNullable = false;
                     }
@@ -76,7 +76,7 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
                         if (j == EPSILON)
                             continue;
                         if (first[X][j]) {
-                            if (addToSet(first[A], j))
+                            if (addToSet(first[NT], j))
                                 changed = true;
                         }
                     }
@@ -89,9 +89,9 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
                     }
                 }
             }
-            // If every symbol in the production was nullable, add EPSILON to FIRST(A).
+            // If every symbol in the production was nullable, add EPSILON to FIRST(NT).
             if (productionNullable) {
-                if (addToSet(first[A], EPSILON))
+                if (addToSet(first[NT], EPSILON))
                     changed = true;
             }
         }
@@ -106,10 +106,10 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
 
     do {
         changed = false;
-        // For every production A -> X1 X2 ... Xn
+        // For every production NT -> X1 X2 ... Xn
         for (r = 0; r < G.num_rules; r++) {
             Rule rule = G.rules[r];
-            int A = rule.lhs;
+            int NT = rule.lhs;
             // For each symbol in the right-hand side
             for (i = 0; i < rule.num_rhs; i++) {
                 Symbol sym = rule.rhs[i];
@@ -149,10 +149,10 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
                         }
                     }
                     // If the entire beta is nullable (or beta is empty),
-                    // add FOLLOW(A) to FOLLOW(B).
+                    // add FOLLOW(NT) to FOLLOW(B).
                     if (betaNullable) {
                         for (int t = 0; t < NUM_TERMINALS; t++) {
-                            if (follow[A][t]) {
+                            if (follow[NT][t]) {
                                 if (addToSet(follow[B], t))
                                     changed = true;
                             }
@@ -325,8 +325,11 @@ void computeFirstOfProduction(Rule rule, FirstAndFollow F, int numTerminals,
 
     for (int i = 0; i < rule.num_rhs; i++) {
         Symbol X = rule.rhs[i];
+        if (X.is_terminal && X.symbol.t == EPSILON) {
+            *containsEpsilon = true;
+            break;
+        }
         if (X.is_terminal) {
-            
             if (!exists(firstSet, *firstCount, X.symbol.t))
                 firstSet[(*firstCount)++] = X.symbol.t;
             *containsEpsilon = false;
@@ -389,7 +392,7 @@ ParseTable* createParseTable(FirstAndFollow F) {
     // For every production rule in the grammar, determining where to place it in the table.
     for (int r = 0; r < grammar->num_rules; r++) {
         Rule rule = grammar->rules[r];
-        NON_TERMINAL A = rule.lhs;  
+        NON_TERMINAL NT = rule.lhs;  
         
         // Allocate temporary space for FIRST(rule.rhs)
         int* firstSet = (int*)malloc(T->num_terminals * sizeof(int));
@@ -406,16 +409,16 @@ ParseTable* createParseTable(FirstAndFollow F) {
         // For each terminal in FIRST (except EPSILON), update the table.
         for (i = 0; i < firstCount; i++) {
             if (firstSet[i] != EPSILON) {
-                T->table[A][firstSet[i]] = r;
+                T->table[NT][firstSet[i]] = r;
             }
         }
-        // If the production can derive epsilon, then for every terminal in FOLLOW(A),
+        // If the production can derive epsilon, then for every terminal in FOLLOW(NT),
         // updating the table.
         if (derivesEpsilon) {
-            FFEntry* entry = findFFEntry(F, A);
+            FFEntry* entry = findFFEntry(F, NT);
             if (entry != NULL) {
                 for (j = 0; j < entry->num_follow; j++) {
-                    T->table[A][entry->follow[j]] = r;
+                    T->table[NT][entry->follow[j]] = r;
                 }
             }
         }
@@ -554,11 +557,12 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             // first index of location of rule in parse table T
             // second index of location of rule in parse table T
             int g_index = T->table[top_symbol.symbol.nt][curr_token->token]; // index of rule in RuleList G
-
+            
             if (g_index == -1){
                 // ERROR
                 printf("Error: No rule found for %s and %s\n", getNonTermName(top_symbol.symbol.nt), getTokenName(curr_token->token));
                 // PANIC MODE
+                exit(1);
                 continue;
             }
 
@@ -574,6 +578,9 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             // pop the top of the stack and push the rule in reverse order
             pop(stack);
             while(num_rhs--){
+                if (rule[num_rhs].is_terminal && rule[num_rhs].symbol.t == EPSILON){
+                    break;
+                }
                 push(stack, rule[num_rhs], node);
             }
         }
