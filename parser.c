@@ -440,8 +440,8 @@ ParseTable* initializeparser(char* grammarfile, char* first_follow){
         printf("\n");
     }
 
-    //debug
     F = ComputeFirstAndFollowSets(*grammar);
+    //debug
     // printf("done\n");
     // printing first and follow sets
     for (int i=0; i<F->num_entries; i++){
@@ -460,6 +460,7 @@ ParseTable* initializeparser(char* grammarfile, char* first_follow){
 
     T = createParseTable(*F);
     
+    // debug
     printf("initialization completed\n");
 
     return T;
@@ -468,7 +469,7 @@ ParseTable* initializeparser(char* grammarfile, char* first_follow){
 TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
 
     Stack* stack = createStack();
-    push(stack, (Symbol){true, .symbol.nt = PROGRAM}, NULL);
+    push(stack, (Symbol){false, .symbol.nt = PROGRAM}, NULL);
 
     TreeNode* parse_tree = createTreeNode((Symbol){false, .symbol.nt=PROGRAM}, false, NULL);
 
@@ -530,7 +531,12 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             if (top_symbol.symbol.t == curr_token->token){
                 // MATCH
                 TreeNode* leaf = createTreeNode(top_symbol, true, curr_token);
-                addChild(parentNode, leaf);
+                if (parentNode == NULL){
+                    addChild(parse_tree, leaf);
+                }
+                else{
+                    addChild(parentNode, leaf);
+                }
                 pop(stack);
                 curr_token = getNextToken();
             }
@@ -559,8 +565,12 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             Symbol* rule = grammar->rules[g_index].rhs;
             int num_rhs = grammar->rules[g_index].num_rhs;
             TreeNode* node = createTreeNode(top_symbol, false, NULL);
-            addChild(parentNode, node);
-            
+            if (parentNode == NULL){
+                addChild(parse_tree, node);
+            }
+            else{
+                addChild(parentNode, node);
+            }            
             // pop the top of the stack and push the rule in reverse order
             pop(stack);
             while(num_rhs--){
