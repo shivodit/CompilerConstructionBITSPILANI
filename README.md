@@ -38,75 +38,14 @@ This is the term project for the CS F363 Compiler Construction course at BITS Pi
   - Measure execution time for parsing.
 - **Main File:** `driver.c`
 
-### Test Harness (test.c)
-- **Purpose:** A separate test program to verify the reading and display of FIRST and FOLLOW sets.
-- **Usage:**  
-  Compile using:
-  ```bash
-  gcc -Wall -Wextra -g -o test test.c -lm
-  ```
-  Run using:
-  ```bash
-  ./test
-  ```
-- **Output:** Displays each non-terminal with its corresponding FIRST and FOLLOW sets.
-
-## Directory Structure
-
-```
-CompilerConstructionBITSPILANI/
-├── driver.c
-├── lexer.c
-├── lexer.h
-├── lexerDef.h
-├── helper_function.c
-├── helper_function.h
-├── parser.c
-├── parser.h
-├── parserDef.h
-├── parseTree.c
-├── parseTree.h
-├── parseTreeDef.h
-├── stack.c
-├── stack.h
-├── stackDef.h
-├── symbol_table.c
-├── symbol_table.h
-├── symbol_tableDef.h
-├── test.c
-├── final_grammar.txt
-├── final_grammar_index_clean.txt
-├── final_grammar_index_rep.txt
-├── grammar_ex.txt
-├── Makefile
-├── README.md
-└── testcases/
-    ├── lexer_test_cases/
-    │   ├── lexemesandtokens_t1.txt
-    │   ├── lexemesandtokens_t2.txt
-    │   ├── t1.txt
-    │   └── t1_1.txt
-    └── parser_test_cases/
-        ├── t3.txt
-        ├── t4.txt
-        ├── t5.txt
-        ├── t6.txt
-```
-
 ## How to Build
 
 1. **Compile the Main Compiler:**
    In the project root directory, run:
    ```bash
-   make
+   make run f1="file_to_be_compiled.txt" f2="output_file_for_parse_tree.txt"
    ```
-   This will compile all source files into an executable named `compiler`.
-
-2. **Compile the Test Harness:**
-   To compile the test.c file (for FIRST/FOLLOW set testing), run:
-   ```bash
-   gcc -Wall -Wextra -g -o test test.c -lm
-   ```
+   This will compile and run compiler
 
 ## How to Run
 
@@ -126,31 +65,9 @@ A menu will appear with options:
 - **3:** Parse the source code and generate a parse tree (saved to the output file).
 - **4:** Display execution time for parsing.
 
-### Running the Test Harness
-To run the FIRST/FOLLOW set tester:
-```bash
-./test
-```
-This prints the FIRST and FOLLOW sets for each non-terminal to the console.
-
 ## Testing
 
-Test cases are provided in the `testcases/` directory:
-- **Lexer Test Cases:** Located in `testcases/lexer_test_cases/` to verify tokenization.
-- **Parser Test Cases:** Located in `testcases/parser_test_cases/` for syntactically correct and incorrect inputs.
-
-Run these test cases to validate both the lexical analyzer and parser.
-
-## Known Issues and Future Work
-
-- **Error Recovery:**  
-  Current error handling in both lexer and parser prints errors and may continue. Enhanced recovery strategies are planned.
-- **Corner Case Handling in Lexer:**  
-  Some edge cases in floating-point number handling and retracting across buffers may need further refinement.
-- **Semantic Analysis:**  
-  This phase is not yet implemented but will be added in future stages.
-- **Documentation:**  
-  More detailed inline comments and function-level documentation will be added as development continues.
+Test cases are provided
 
 ## Conclusion
 
@@ -165,9 +82,5 @@ This project implements a complete compiler front-end for a custom language, int
   The parser reads the grammar, computes FIRST and FOLLOW sets (using `ComputeFirstAndFollowSets()`), builds an LL(1) parse table, and parses the tokens into a parse tree using a stack.  
   The driver (`driver.c`) ties these components together and offers a menu for testing each phase.
 
-- **Testing:**  
-  Use the provided test cases (in the testcases folder) to verify both the lexer and parser.  
-  Use `test.c` as an independent test program to check the FIRST/FOLLOW sets.
-
 - **Building and Running:**  
-  The Makefile builds the main executable (`compiler`). A separate compilation command is available for `test.c`.
+  The Makefile builds the main executable (`compiler`)
