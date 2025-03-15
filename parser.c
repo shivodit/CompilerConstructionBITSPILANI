@@ -424,6 +424,17 @@ ParseTable* createParseTable(FirstAndFollow F) {
         }
         free(firstSet);
     }
+    // syn entries (for every non-terminal, if a terminal is in its FOLLOW and error (-1), then syn entry)
+    for (i = 0; i < T->num_non_terminals; i++) {
+        FFEntry* entry = findFFEntry(F, i);
+        if (entry != NULL) {
+            for (j = 0; j < entry->num_follow; j++) {
+                if(T->table[i][entry->follow[j]] == -1){
+                    T->table[i][entry->follow[j]] = -2;
+                }
+            }
+        }
+    }
     return T;
 }
 
@@ -520,8 +531,9 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
                 printf("Error: Unexpected end of file\n");
                 break;
             }
-
+            // debug (decide what to do)
             // TOKEN ERROR {DECIDE WHETHER TO INVOKE PANIC MODE}
+            curr_token = getNextToken();
             continue;
         }
 
@@ -545,10 +557,12 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             }
             else{
                 // ERROR
-                // PANIC MODE
-                printf("Error: Unexpected token %s at line %d\n", curr_token->lexeme, curr_token->line_no);
-                curr_token = getNextToken();
-                // pop(stack);
+                // PANIC MODE 2
+                // debug
+                printf("Line %d Error: The token %s for lexeme %s does not match with the expected token %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getTokenName(top_symbol.symbol.t));
+                // debug
+                pop(stack);
+                // curr_token = getNextToken();
             }
         }
         else{
@@ -560,9 +574,19 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             
             if (g_index == -1){
                 // ERROR
-                printf("Error: No rule found for %s and %s\n", getNonTermName(top_symbol.symbol.nt), getTokenName(curr_token->token));
+                // debug
+                printf("Line %d Error: Invalid token %s encountered with value %s; stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
                 // PANIC MODE
-                exit(1);
+                curr_token = getNextToken();
+                // exit(1);
+                continue;
+            }
+            else if (g_index == -2){
+                // SYNCHRONIZATION
+                // debug
+                printf("Line %d Error: Invalid token %s encountered with value %s; stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
+                // PANIC MODE
+                pop(stack);
                 continue;
             }
 
