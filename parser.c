@@ -39,9 +39,6 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
         }
     }
 
-    // ============================================================
-    // FIRST SET COMPUTATION
-    // ============================================================
     bool changed;
     do {
         changed = false;
@@ -97,10 +94,6 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
         }
     } while (changed);
 
-    // ============================================================
-    // FOLLOW SET COMPUTATION
-    // ============================================================
-    // By convention, add the end marker DOLLAR to the start symbol's FOLLOW set.
     int start = G.rules[0].lhs;
     follow[start][DOLLAR] = true;
 
@@ -163,9 +156,6 @@ FirstAndFollow* ComputeFirstAndFollowSets(RuleList G) {
         }
     } while (changed);
 
-    // ============================================================
-    // Pack the results into a FirstAndFollow structure.
-    // ============================================================
     FirstAndFollow* ff = (FirstAndFollow*) malloc(sizeof(FirstAndFollow));
     if (!ff) {
         perror("Malloc failed");
