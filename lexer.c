@@ -236,11 +236,11 @@ void handleError(int current_state, char c){
     
     switch(current_state){
         case 0:
-            printf("Line no. %d: Invalid character <%c>\n", line_no, c);
+            printf("Line no. %d: Invalid Symbol <%c>\n", line_no, c);
             break;
         case 1:
             retract();
-            printf("Line no. %d: Invalid character <%c> after # expected [a-z]\n", line_no, c);
+            printf("Line no. %d: Invalid Symbol <%c> after # expected [a-z]\n", line_no, c);
             break;
         case 4:
             retract();

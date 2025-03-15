@@ -2,7 +2,7 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -g 
+CFLAGS = -Wall -Wextra -g -O2
 
 # Libraries
 LDLIBS = -lm
