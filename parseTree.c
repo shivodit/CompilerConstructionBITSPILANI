@@ -3,23 +3,62 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Create a new tree node
+// TreeNode* createTreeNode(Symbol symbol, bool isleaf, tokenInfo* token) {
+//     TreeNode* node = (TreeNode*)malloc(sizeof(TreeNode));
+//     if (!node) {
+//         printf("Failed to allocate tree node\n");
+//         exit(EXIT_FAILURE); // Exit if allocation fails
+//     }
+//     node->symbol = symbol;
+//     node->isleaf = isleaf;
+//     node->token = token;
+//     node->parent = NULL;
+//     node->child = NULL;
+//     node->next = NULL;
+//     node->prev = NULL;
+//     return node;
+// }
+
 TreeNode* createTreeNode(Symbol symbol, bool isleaf, tokenInfo* token) {
     TreeNode* node = (TreeNode*)malloc(sizeof(TreeNode));
     if (!node) {
         printf("Failed to allocate tree node\n");
-        exit(EXIT_FAILURE); // Exit if allocation fails
+        exit(EXIT_FAILURE);
     }
     node->symbol = symbol;
     node->isleaf = isleaf;
-    node->token = token;
+
+    if (token != NULL) {
+        // Allocate memory for a new tokenInfo structure
+        node->token = (tokenInfo*)malloc(sizeof(tokenInfo));
+        if (!node->token) {
+            printf("Failed to allocate token info\n");
+            exit(EXIT_FAILURE);
+        }
+        // Copy the content of token into the newly allocated tokenInfo
+        *(node->token) = *token;
+        // Deep copy the lexeme if it exists
+        if (token->lexeme != NULL) {
+            node->token->lexeme = strdup(token->lexeme);
+            if (node->token->lexeme == NULL) {
+                printf("Failed to allocate lexeme copy\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+    } else {
+        node->token = NULL;
+    }
+
     node->parent = NULL;
     node->child = NULL;
     node->next = NULL;
     node->prev = NULL;
     return node;
 }
+
 
 // Add a child to a parent node
 void addChild(TreeNode* parent, TreeNode* child) {

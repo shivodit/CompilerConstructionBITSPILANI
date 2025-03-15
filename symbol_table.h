@@ -3,7 +3,7 @@
 #include "symbol_tableDef.h"
 #include <stdlib.h>
 
-#define SYMBOL_TABLE_SIZE 211  // A prime number for better hashing.
+// #define SYMBOL_TABLE_SIZE 211  // A prime number for better hashing.
 
 // Function declarations
 unsigned int hashFunction(const char *lexeme);
