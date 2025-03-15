@@ -506,8 +506,6 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
         // main logic
         top_symbol = top(stack);
         parentNode = topParent(stack);
-        // debug
-        printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
 
         // error or eof condition
         if (curr_token == NULL) {
@@ -538,24 +536,9 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             continue;    
         }
         
-        // main logic
-        top_symbol = top(stack);
-        parentNode = topParent(stack);
         // debug
         printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
-        // debug
-        if (verbose) {
-            printf("Current token: %s\n", getTokenName(curr_token->token));
-        }
-        
-        
 
-        // verify
-        // also consider the same thing for ERROR
-        if(curr_token->token == 1){ // in case of TK_COMMENT, skip an iteration 
-            curr_token = getNextToken();
-            continue;    
-        }
         // debug
         if (verbose) {
             printf("Current token: %s\n", getTokenName(curr_token->token));
