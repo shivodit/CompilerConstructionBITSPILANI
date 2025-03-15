@@ -2,6 +2,7 @@
 #include "parserDef.h"
 #include <stdbool.h>
 #include <stdio.h>  
+#include <string.h> // new addition 14/3/25 12pm
 
 const char *tokenList[] = {
     "TK_ASSIGNOP",
