@@ -496,26 +496,10 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
     Symbol top_symbol;
 
     tokenInfo* curr_token = getNextToken();
+    // // debug
     // printTokenInfo(*curr_token);
     while (true){
         token_count++;
-        // verify
-        // also consider the same thing for ERROR
-        if(curr_token->token == 1){ // in case of TK_COMMENT, skip an iteration 
-            curr_token = getNextToken();
-            continue;    
-        }
-        
-        // main logic
-        top_symbol = top(stack);
-        parentNode = topParent(stack);
-        // debug
-        printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
-        // debug
-        if (verbose) {
-            printf("Current token: %s\n", getTokenName(curr_token->token));
-        }
-        
         // error or eof condition
         if (curr_token == NULL) {
             if (verbose) {
@@ -536,6 +520,24 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             curr_token = getNextToken();
             continue;
         }
+        // verify
+        // also consider the same thing for ERROR
+        if(curr_token->token == 1){ // in case of TK_COMMENT, skip an iteration 
+            curr_token = getNextToken();
+            continue;    
+        }
+        
+        // main logic
+        top_symbol = top(stack);
+        parentNode = topParent(stack);
+        // debug
+        printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
+        // debug
+        if (verbose) {
+            printf("Current token: %s\n", getTokenName(curr_token->token));
+        }
+        
+        
 
         if (verbose) {
             printTokenInfo(*curr_token);
@@ -558,7 +560,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             else{
                 // ERROR
                 // PANIC MODE 2
-                // debug
+                // // debug
                 printf("Line %d Error: The token %s for lexeme %s does not match with the expected token %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getTokenName(top_symbol.symbol.t));
                 // debug
                 pop(stack);
@@ -574,9 +576,20 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             
             if (g_index == -1){
                 // ERROR
+                // PANIC MODE
+                // debug
+                FFEntry* temp = findFFEntry(*F, top_symbol.symbol.nt);
+                // if first of top_symbol contains EPSILON, then pop the stack
+                if(temp != NULL){
+                    if (exists((int*)temp->first, temp->num_first, EPSILON)){
+                        // debug
+                        printf("-----------inside if exists condition; popping stack\n");
+                        pop(stack);
+                        continue;
+                    }
+                }
                 // debug
                 printf("Line %d Error: Invalid token %s encountered with value %s; stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
-                // PANIC MODE
                 curr_token = getNextToken();
                 // exit(1);
                 continue;
