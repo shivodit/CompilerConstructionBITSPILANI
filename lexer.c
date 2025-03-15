@@ -1,14 +1,7 @@
-// 1. max. lexeme size should be < BUFFER_SIZE
-// also comment length < BUFFER_SIZE
-// 2. handling 2 buffers
-
-
 #include "lexerDef.h"
 #include "helper_function.h"
 #include "symbol_table.h"
-
 #include <math.h>
-// use -lm flag while compiling
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -683,10 +676,3 @@ void removeComments(char *testcaseFile, char *cleanFile){
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------------------*/
-
-// temporary
-// int main(){
-//     char* g = "testfile.txt";
-//     char* p = "cleanfile.txt";
-//     removeComments(g,p);
-// }

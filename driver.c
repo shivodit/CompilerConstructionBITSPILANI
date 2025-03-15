@@ -20,18 +20,6 @@ int main(int argc, char *argv[]) {
     char *source_file = argv[1];
     char *output_file = argv[2];
 
-    // // DEBUG 
-    // FILE* fp = fopen(source_file, "r");
-    // if (fp == NULL){
-    //     printf("Error opening file\n");
-    //     return 1;
-    // }
-    // initializelexer(fp);
-    // getStream(fp);
-    // for (int i =0 ; i< 20;i++)
-    // printf("nextc() = %c\n", nextc());
-
-
     int option;
     while (1) {
         printf("\nOptions:\n");
