@@ -505,7 +505,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
         top_symbol = top(stack);
         parentNode = topParent(stack);
         // debug
-        // printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
+        printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
 
         // error or eof condition
         if (curr_token == NULL) {
@@ -579,7 +579,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             if (g_index == -1){
                 // ERROR
                 // debug
-                printf("Line %d Error: Invalid token %s encountered with value %s; stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
+                printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
                 // PANIC MODE
                 curr_token = getNextToken();
                 // exit(1);
@@ -588,7 +588,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             else if (g_index == -2){
                 // SYNCHRONIZATION
                 // debug
-                printf("Line %d Error: Invalid token %s encountered with value %s; stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
+                printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
                 // PANIC MODE
                 pop(stack);
                 continue;

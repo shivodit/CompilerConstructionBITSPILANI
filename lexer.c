@@ -155,6 +155,8 @@ char nextc(){
             return EOF;
         }
         tb->fp = 0;
+        // HOTFIX : if new buffer loaded then ip and fp are in different buffers
+        tb->arePointersInDifferentBuffers = true;
         c = tb->B[!tb->bufferToBeLoaded][tb->fp++];
     }
     else{
@@ -185,16 +187,24 @@ char* getLexeme(){
     int length;
     if(tb->arePointersInDifferentBuffers){
         length = (BUFFER_SIZE - tb->ip + tb->fp) + 1; // extra +1 is for '/0'
+        //debug
+        // printf("diff Length: %d\n", length);
+        // printf("fp: %d, ip: %d\n", tb->fp, tb->ip);
     }
     else{
         length = (tb->fp - tb->ip) + 1; // extra +1 is for '/0'
+        //debug
+        // printf("same Length: %d\n", length);
+        // printf("fp: %d, ip: %d\n", tb->fp, tb->ip);
     }
 
     char* lex = (char*)malloc(length*sizeof(char));
+    // debug
+    // printf("malloc of lexeme\n");
     if(tb->arePointersInDifferentBuffers){
         int x = BUFFER_SIZE - tb->ip;
         for(int i=0;i<x;i++){
-            lex[i] =tb->B[!tb->bufferToBeLoaded][tb->ip+i];
+            lex[i] =tb->B[tb->bufferToBeLoaded][tb->ip+i];
         }
         for(int i=0;i<length-x-1;i++){
             lex[i+x] = tb->B[!tb->bufferToBeLoaded][i];
@@ -213,6 +223,8 @@ char* getLexeme(){
 void accept(){
     tb->ip=tb->fp;
     tb->ip_line_no = tb->fp_line_no;
+    // HOTFIX : if accept is called then ip and fp are in the same buffer
+    tb->arePointersInDifferentBuffers = false;
     return;
 }
 
