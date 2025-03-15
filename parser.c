@@ -318,7 +318,7 @@ FFEntry* findFFEntry(FirstAndFollow F, NON_TERMINAL nt) {
     return NULL;
 }
 
-void computeFirstOfProduction(Rule rule, FirstAndFollow F, int numTerminals,
+void computeFirstOfProduction(Rule rule, FirstAndFollow F,
                               bool* containsEpsilon, int* firstSet, int* firstCount) {
     *firstCount = 0;
     *containsEpsilon = true; 
@@ -403,7 +403,7 @@ ParseTable* createParseTable(FirstAndFollow F) {
         int firstCount = 0;
         bool derivesEpsilon = false;
         // Computing FIRST set for the right-hand side of the production.
-        computeFirstOfProduction(rule, F, T->num_terminals, &derivesEpsilon, firstSet, &firstCount);
+        computeFirstOfProduction(rule, F, &derivesEpsilon, firstSet, &firstCount);
         // printf("%d\n", firstCount);
         // printf("%d\n", firstSet[0]);
         // For each terminal in FIRST (except EPSILON), update the table.
@@ -438,7 +438,7 @@ ParseTable* createParseTable(FirstAndFollow F) {
     return T;
 }
 
-ParseTable* initializeparser(char* grammarfile, char* first_follow){
+ParseTable* initializeparser(char* grammarfile){
     grammar = readRules(grammarfile);
     // debug
     // for (int i=0; i<grammar->num_rules; i++){
@@ -537,7 +537,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
         }
         
         // debug
-        printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
+        // printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
 
         // debug
         if (verbose) {
@@ -588,7 +588,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
                 if(temp != NULL){
                     if (exists((int*)temp->first, temp->num_first, EPSILON)){
                         // debug
-                        printf("-----------inside if exists condition; popping stack\n");
+                        // printf("-----------inside if exists condition; popping stack\n");
                         pop(stack);
                         continue;
                     }
@@ -623,6 +623,8 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             pop(stack);
             while(num_rhs--){
                 if (rule[num_rhs].is_terminal && rule[num_rhs].symbol.t == EPSILON){
+                    TreeNode* epsilon = createTreeNode(rule[num_rhs], true, NULL);
+                    addChild(node,epsilon);
                     break;
                 }
                 push(stack, rule[num_rhs], node);
@@ -682,18 +684,14 @@ void inorderPrint(TreeNode* node, FILE* fp) {
     // traverse the first child's subtree, then print the current node,
     // then traverse the remaining siblings of the first child.
     if (node->child) {
-        // Traverse first child's subtree
-        inorderPrint(node->child, fp);
-        
-        // Print the current node
-        printNode(node, fp);
-        
-        // Traverse remaining siblings of the first child (if any)
-        TreeNode* sibling = node->child->next;
-        while (sibling) {
-            inorderPrint(sibling, fp);
-            sibling = sibling->next;
+        TreeNode* child = node->child;
+        while(child != NULL && child->next != NULL) {
+            inorderPrint(child, fp);
+            child = child->next;
         }
+        printNode(node, fp);
+
+        inorderPrint(child, fp);
     } else {
         // Leaf node: simply print
         printNode(node, fp);
