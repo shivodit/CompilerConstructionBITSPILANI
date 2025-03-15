@@ -106,6 +106,8 @@ FILE *getStream(FILE *fp){
 
     // initializing the buffer with EOF so that if the reamining data in file is lesser than BUFFER_SIZE, the remaining part of the buffer is filled with EOFs
     // TAG: FREAD MIGHT BE WRONG
+    // TODO: CHECK IF IT IS WORKING WITH CARRIAGE RETURN 
+
     tb->charactersReadLastTime = fread(tb->B[tb->bufferToBeLoaded], sizeof(char), BUFFER_SIZE, fp);
     if(tb->charactersReadLastTime == 0 || tb->charactersReadLastTime < BUFFER_SIZE){
         tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
@@ -153,6 +155,8 @@ char nextc(){
             return EOF;
         }
         tb->fp = 0;
+        // HOTFIX : if new buffer loaded then ip and fp are in different buffers
+        tb->arePointersInDifferentBuffers = true;
         c = tb->B[!tb->bufferToBeLoaded][tb->fp++];
     }
     else{
@@ -183,16 +187,24 @@ char* getLexeme(){
     int length;
     if(tb->arePointersInDifferentBuffers){
         length = (BUFFER_SIZE - tb->ip + tb->fp) + 1; // extra +1 is for '/0'
+        //debug
+        // printf("diff Length: %d\n", length);
+        // printf("fp: %d, ip: %d\n", tb->fp, tb->ip);
     }
     else{
         length = (tb->fp - tb->ip) + 1; // extra +1 is for '/0'
+        //debug
+        // printf("same Length: %d\n", length);
+        // printf("fp: %d, ip: %d\n", tb->fp, tb->ip);
     }
 
     char* lex = (char*)malloc(length*sizeof(char));
+    // debug
+    // printf("malloc of lexeme\n");
     if(tb->arePointersInDifferentBuffers){
         int x = BUFFER_SIZE - tb->ip;
         for(int i=0;i<x;i++){
-            lex[i] =tb->B[!tb->bufferToBeLoaded][tb->ip+i];
+            lex[i] =tb->B[tb->bufferToBeLoaded][tb->ip+i];
         }
         for(int i=0;i<length-x-1;i++){
             lex[i+x] = tb->B[!tb->bufferToBeLoaded][i];
@@ -211,6 +223,8 @@ char* getLexeme(){
 void accept(){
     tb->ip=tb->fp;
     tb->ip_line_no = tb->fp_line_no;
+    // HOTFIX : if accept is called then ip and fp are in the same buffer
+    tb->arePointersInDifferentBuffers = false;
     return;
 }
 
@@ -304,6 +318,7 @@ tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
         retract();
     }
     char* lx = getLexeme();
+
     if (tk == TK_COMMENT){
         lx = "%";
     }
@@ -345,11 +360,16 @@ tokenInfo* getNextToken(){
     int s = 1;
     while (true){
         char c = nextc();
+        
         switch (DFA_STATE){
             case 0:{
                 if (iswhitespace(c)){
                     accept();
                     continue;
+                }
+                if (c == EOF){
+                    printf("Lexer: End of file reached\n");
+                    return NULL;
                 }
                 else if (isEqual(c,'#')) DFA_STATE = 1;
                 else if (isEqual(c,'_')) DFA_STATE = 4;
@@ -605,11 +625,11 @@ tokenInfo* getNextToken(){
                 return NULL;
                 break;
         }
-
         // FIX for last token not being recognized if file ends without a newline
         if (c == EOF){
+            printf("Lexer: End of file reached\n");
             return NULL;
-        }
+        }        
     }
 }
 
@@ -617,7 +637,8 @@ tokenInfo* getNextToken(){
 
 tokenInfo** getAllTokens(char* testcasefile, bool verbose){
     // open file and initializeTwinBuffer
-    FILE* fp = fopen(testcasefile, "r");
+    // HOTFIX: opening in binary mode might be wrong
+    FILE* fp = fopen(testcasefile, "rb");
     initializelexer(fp);
     tokenInfo** tokenlist = (tokenInfo**)calloc(TOKEN_LIST_SIZE,sizeof(tokenInfo*));
     int token_count = 0;

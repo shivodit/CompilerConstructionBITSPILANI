@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#define BUFFER_SIZE 4096 // buffer size of a single buffer
+#define BUFFER_SIZE 64 // buffer size of a single buffer
 #define TOKEN_LIST_SIZE 4096
 
 typedef enum {
