@@ -632,7 +632,6 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
         }
     }
     cleanup();
-
     return parse_tree;
 }
 

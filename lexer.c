@@ -210,7 +210,9 @@ char* getLexeme(){
     }
         
     lex[length-1] = '\0';
+    // printf("lexeme: %s\n", lex);
     return lex;
+    
 }
 
 void accept(){
