@@ -482,6 +482,8 @@ ParseTable* initializeparser(char* grammarfile){
 
 TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
 
+    bool has_error_occurred = false;
+
     Stack* stack = createStack();
     push(stack, (Symbol){true, .symbol.t = DOLLAR}, NULL);
     push(stack, (Symbol){false, .symbol.nt = PROGRAM}, NULL);
@@ -501,6 +503,12 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
     // // debug
     // printTokenInfo(*curr_token);
     while (true){
+        if (isEmpty(stack)){
+            printf("Multiple Errors have occurred while parsing\n");
+            has_error_occurred = true;
+            break;
+        }
+
         token_count++;
 
         // main logic
@@ -515,17 +523,18 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             
             // STOP CONDITION
             if (has_file_ended() && top_symbol.is_terminal && top_symbol.symbol.t == DOLLAR){
-                printf("Parsing compelted successfully\n");
                 break;             
             }
             else if (has_file_ended()){
                 printf("top_symbol: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
                 // ERROR
                 printf("Error: Unexpected end of file\n");
+                has_error_occurred = true;
                 break;
             }
             // debug (decide what to do)
             // TOKEN ERROR {DECIDE WHETHER TO INVOKE PANIC MODE}
+            has_error_occurred = true;
             curr_token = getNextToken();
             continue;
         }
@@ -568,6 +577,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
                 // // debug
                 printf("Line %d Error: The token %s for lexeme %s does not match with the expected token %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getTokenName(top_symbol.symbol.t));
                 // debug
+                has_error_occurred = true;
                 pop(stack);
                 // curr_token = getNextToken();
             }
@@ -596,7 +606,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
                 // debug
                 printf("Line %d Error: Invalid token %s encountered with value %s; stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
                 // PANIC MODE
-
+                has_error_occurred = true;
                 curr_token = getNextToken();
                 // exit(1);
                 continue;
@@ -606,6 +616,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
                 // debug
                 printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n", curr_token->line_no, getTokenName(curr_token->token), curr_token->lexeme, getNonTermName(top_symbol.symbol.nt));
                 // PANIC MODE
+                has_error_occurred = true;
                 pop(stack);
                 continue;
             }
@@ -630,6 +641,12 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
                 push(stack, rule[num_rhs], node);
             }
         }
+    }
+    if (!has_error_occurred){
+        printf("Input source code is syntactically correct\n");
+    }
+    else{
+        printf("Input source code has syntax errors\n");
     }
     cleanup();
     return parse_tree;
