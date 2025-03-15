@@ -441,36 +441,36 @@ ParseTable* createParseTable(FirstAndFollow F) {
 ParseTable* initializeparser(char* grammarfile, char* first_follow){
     grammar = readRules(grammarfile);
     // debug
-    for (int i=0; i<grammar->num_rules; i++){
-        printf("%s -> ", getNonTermName(grammar->rules[i].lhs));
-        for (int j=0; j<grammar->rules[i].num_rhs; j++){
-            if (grammar->rules[i].rhs[j].is_terminal){
-                printf("%s ", getTokenName(grammar->rules[i].rhs[j].symbol.t));
-            }
-            else{
-                printf("%s ", getNonTermName(grammar->rules[i].rhs[j].symbol.nt));
-            }
-        }
-        printf("\n");
-    }
+    // for (int i=0; i<grammar->num_rules; i++){
+    //     printf("%s -> ", getNonTermName(grammar->rules[i].lhs));
+    //     for (int j=0; j<grammar->rules[i].num_rhs; j++){
+    //         if (grammar->rules[i].rhs[j].is_terminal){
+    //             printf("%s ", getTokenName(grammar->rules[i].rhs[j].symbol.t));
+    //         }
+    //         else{
+    //             printf("%s ", getNonTermName(grammar->rules[i].rhs[j].symbol.nt));
+    //         }
+    //     }
+    //     printf("\n");
+    // }
 
     F = ComputeFirstAndFollowSets(*grammar);
     //debug
     // printf("done\n");
     // printing first and follow sets
-    for (int i=0; i<F->num_entries; i++){
-        printf("Non-terminal: %s\n", getNonTermName(F->entries[i].non_terminal));
-        printf("First: ");
-        for (int j=0; j<F->entries[i].num_first; j++){
-            printf("%s ", getTokenName(F->entries[i].first[j]));
-        }
-        printf("\n");
-        printf("Follow: ");
-        for (int j=0; j<F->entries[i].num_follow; j++){
-            printf("%s ", getTokenName(F->entries[i].follow[j]));
-        }
-        printf("\n");
-    }
+    // for (int i=0; i<F->num_entries; i++){
+    //     printf("Non-terminal: %s\n", getNonTermName(F->entries[i].non_terminal));
+    //     printf("First: ");
+    //     for (int j=0; j<F->entries[i].num_first; j++){
+    //         printf("%s ", getTokenName(F->entries[i].first[j]));
+    //     }
+    //     printf("\n");
+    //     printf("Follow: ");
+    //     for (int j=0; j<F->entries[i].num_follow; j++){
+    //         printf("%s ", getTokenName(F->entries[i].follow[j]));
+    //     }
+    //     printf("\n");
+    // }
 
     T = createParseTable(*F);
     
@@ -483,9 +483,11 @@ ParseTable* initializeparser(char* grammarfile, char* first_follow){
 TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
 
     Stack* stack = createStack();
+    push(stack, (Symbol){true, .symbol.t = DOLLAR}, NULL);
     push(stack, (Symbol){false, .symbol.nt = PROGRAM}, NULL);
 
-    TreeNode* parse_tree = createTreeNode((Symbol){false, .symbol.nt=PROGRAM}, false, NULL);
+    // TreeNode* parse_tree = createTreeNode((Symbol){false, .symbol.nt=PROGRAM}, false, NULL);
+    TreeNode* parse_tree = NULL;
 
     // init lexer
     FILE* fp = fopen(testcasefile, "r");
@@ -499,23 +501,12 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
     // printTokenInfo(*curr_token);
     while (true){
         token_count++;
-        // verify
-        // also consider the same thing for ERROR
-        if(curr_token->token == 1){ // in case of TK_COMMENT, skip an iteration 
-            curr_token = getNextToken();
-            continue;    
-        }
-        
         // main logic
         top_symbol = top(stack);
         parentNode = topParent(stack);
         // debug
-        printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
-        // debug
-        if (verbose) {
-            printf("Current token: %s\n", getTokenName(curr_token->token));
-        }
-        
+        // printf("Top of stack: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
+
         // error or eof condition
         if (curr_token == NULL) {
             if (verbose) {
@@ -524,9 +515,11 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             
             // STOP CONDITION
             if (has_file_ended() && top_symbol.is_terminal && top_symbol.symbol.t == DOLLAR){
+                printf("Parsing compelted successfully\n");
                 break;             
             }
             else if (has_file_ended()){
+                printf("top_symbol: %s\n", (top_symbol.is_terminal ? getTokenName(top_symbol.symbol.t) : getNonTermName(top_symbol.symbol.nt)));
                 // ERROR
                 printf("Error: Unexpected end of file\n");
                 break;
@@ -535,6 +528,17 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             // TOKEN ERROR {DECIDE WHETHER TO INVOKE PANIC MODE}
             curr_token = getNextToken();
             continue;
+        }
+
+        // verify
+        // also consider the same thing for ERROR
+        if(curr_token->token == 1){ // in case of TK_COMMENT, skip an iteration 
+            curr_token = getNextToken();
+            continue;    
+        }
+        // debug
+        if (verbose) {
+            printf("Current token: %s\n", getTokenName(curr_token->token));
         }
 
         if (verbose) {
@@ -594,7 +598,7 @@ TreeNode* parseInputSourceCode(char *testcasefile,  bool verbose){
             int num_rhs = grammar->rules[g_index].num_rhs;
             TreeNode* node = createTreeNode(top_symbol, false, NULL);
             if (parentNode == NULL){
-                addChild(parse_tree, node);
+                parse_tree = node;
             }
             else{
                 addChild(parentNode, node);
@@ -650,7 +654,7 @@ void printNode(TreeNode* node, FILE* fp) {
     
     // Print in the format:
     // lexeme CurrentNode lineno tokenName valueIfNumber parentNodeSymbol isLeafNode NodeSymbol
-    fprintf(fp, "%s %s %d %s %s %s %s %s\n", 
+    fprintf(fp, "%s\t%s\t%d\t%s\t%s\t%s\t%s\t%s\n", 
             lexeme, currNodeDesc, line_no, tokenName, valueStr, parentSymbol, isLeafStr, nodeSymbol);
 }
 
@@ -688,7 +692,7 @@ void printParseTree(TreeNode* PT, char *outfile) {
     }
     
     // Print header line (optional)
-    fprintf(fp, "lexeme CurrentNode lineno tokenName valueIfNumber parentNodeSymbol isLeafNode NodeSymbol\n");
+    fprintf(fp, "lexeme\tCurrentNode\tlineno\ttokenName\tvalueIfNumber\tparentNodeSymbol\tisLeafNode\tNodeSymbol\n");
     
     inorderPrint(PT, fp);
     

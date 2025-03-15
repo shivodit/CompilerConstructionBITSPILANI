@@ -106,6 +106,8 @@ FILE *getStream(FILE *fp){
 
     // initializing the buffer with EOF so that if the reamining data in file is lesser than BUFFER_SIZE, the remaining part of the buffer is filled with EOFs
     // TAG: FREAD MIGHT BE WRONG
+    // TODO: CHECK IF IT IS WORKING WITH CARRIAGE RETURN 
+
     tb->charactersReadLastTime = fread(tb->B[tb->bufferToBeLoaded], sizeof(char), BUFFER_SIZE, fp);
     if(tb->charactersReadLastTime == 0 || tb->charactersReadLastTime < BUFFER_SIZE){
         tb->bufferToBeLoaded = !tb->bufferToBeLoaded;
@@ -304,6 +306,7 @@ tokenInfo* action(TOKEN tk, TAGGED_VALUE value, short int retract_num){
         retract();
     }
     char* lx = getLexeme();
+
     if (tk == TK_COMMENT){
         lx = "%";
     }
@@ -345,11 +348,16 @@ tokenInfo* getNextToken(){
     int s = 1;
     while (true){
         char c = nextc();
+        
         switch (DFA_STATE){
             case 0:{
                 if (iswhitespace(c)){
                     accept();
                     continue;
+                }
+                if (c == EOF){
+                    printf("Lexer: End of file reached\n");
+                    return NULL;
                 }
                 else if (isEqual(c,'#')) DFA_STATE = 1;
                 else if (isEqual(c,'_')) DFA_STATE = 4;
@@ -605,11 +613,11 @@ tokenInfo* getNextToken(){
                 return NULL;
                 break;
         }
-
         // FIX for last token not being recognized if file ends without a newline
         if (c == EOF){
+            printf("Lexer: End of file reached\n");
             return NULL;
-        }
+        }        
     }
 }
 
@@ -617,7 +625,8 @@ tokenInfo* getNextToken(){
 
 tokenInfo** getAllTokens(char* testcasefile, bool verbose){
     // open file and initializeTwinBuffer
-    FILE* fp = fopen(testcasefile, "r");
+    // HOTFIX: opening in binary mode might be wrong
+    FILE* fp = fopen(testcasefile, "rb");
     initializelexer(fp);
     tokenInfo** tokenlist = (tokenInfo**)calloc(TOKEN_LIST_SIZE,sizeof(tokenInfo*));
     int token_count = 0;
