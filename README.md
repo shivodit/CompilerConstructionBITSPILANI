@@ -73,6 +73,10 @@ Test cases are provided
 
 This project implements a complete compiler front-end for a custom language, integrating a DFA-based lexer and an LL(1) predictive parser. The design is modular with clear separation of concerns, and it is accompanied by test cases and a dedicated test harness (test.c) for verifying grammar analysis. With further testing and refinement, this project will serve as a solid foundation for subsequent phases such as semantic analysis and code generation.
 
+## NOTE
+
+**Error recovery in parser is not semantically correct (to be fixed)**
+
 ---
 
 ## Final Summary
